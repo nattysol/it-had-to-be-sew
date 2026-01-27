@@ -4,4 +4,4 @@ import settings from './settings'
 import order from './order' // <--- Import it
 
 // We export a simple array named 'schemaTypes'
-export const schemaTypes = [pantograph, material, settings, order],
+export const schemaTypes = [pantograph, material, settings, order]
