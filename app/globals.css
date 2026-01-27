@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Styles */
+@layer utilities {
+  .shadow-quiet {
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Base Styles */
+body {
+  background-color: #f6f6f8; /* background-light */
+  color: #0d1b19;
+}
+
+/* Dark mode support (optional, but good to have ready) */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #161220; /* background-dark */
+    color: white;
+  }
+}
