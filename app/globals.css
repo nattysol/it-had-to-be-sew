@@ -22,3 +22,38 @@ body {
     color: white;
   }
 }
+/* --- SOFT UI THEME --- */
+.surface-sunken {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.05), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+.dark .surface-sunken {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+}
+
+.surface-plush {
+  box-shadow: 0 10px 20px -5px rgba(157, 125, 232, 0.4), inset 0 -4px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease;
+}
+.surface-plush:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 10px -3px rgba(157, 125, 232, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.surface-raised-card {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.03), 0 5px 15px rgba(0, 0, 0, 0.03);
+}
+
+/* FAQ Animation */
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] summary .chevron { transform: rotate(180deg); }
+details summary .chevron { transition: transform 0.3s ease; }
+details .faq-body {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+details[open] .faq-body {
+  opacity: 1;
+  transform: translateY(0);
+}
