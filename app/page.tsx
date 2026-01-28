@@ -4,12 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, Variants } from 'framer-motion'
 import heroImage from './assets/home-hero.webp'
-import servicesImage from './assets/home-services.webp'
+// Note: Ensure PublicNavbar is created at this path
+import { PublicNavbar } from '../app/components/PublicNavbar' 
 
 export default function Home() {
   const pathname = usePathname()
   
-  // Animation Variants
+  // Animation Variants (Kept exactly as approved)
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -31,34 +32,9 @@ export default function Home() {
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-32 bg-[#f6f6f8] dark:bg-[#161220] font-display text-[#0e1b12] dark:text-white transition-colors duration-300">
       
-      {/* --- HEADER (Responsive) --- */}
-      <header className="sticky top-0 z-50 bg-[#f6f6f8]/80 dark:bg-[#161220]/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            {/* Logo Area */}
-            <div className="flex items-center gap-3">
-                {/* Mobile Menu Button */}
-                <button className="md:hidden flex size-10 items-center justify-center rounded-full bg-white dark:bg-[#1a2e20] shadow-sm text-[#0e1b12] dark:text-white">
-                    <span className="material-symbols-outlined text-xl">menu</span>
-                </button>
-                <span className="font-bold text-lg font-serif italic">It Had To Be Sew</span>
-            </div>
-
-            {/* Desktop Nav Links (Hidden on Mobile) */}
-            <div className="hidden md:flex items-center gap-8">
-                <span className="text-[#9d7de8] font-bold text-sm tracking-wide cursor-pointer">HOME</span>
-                <Link href="/services" className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors">SERVICES</Link>
-                <Link href="/contact" className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors">CONTACT</Link>
-                <Link href="/wizard">
-                    <button className="bg-[#9d7de8] text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-sm hover:brightness-105 transition-all active:scale-95">START PROJECT</button>
-                </Link>
-            </div>
-            
-            {/* Mobile Search (Hidden on Desktop) */}
-            <button className="md:hidden flex size-10 items-center justify-center rounded-full bg-white dark:bg-[#1a2e20] shadow-sm text-[#0e1b12] dark:text-white">
-                <span className="material-symbols-outlined text-xl">search</span>
-            </button>
-        </div>
-      </header>
+      {/* --- HEADER REPLACED WITH COMPONENT --- */}
+      {/* This replaces the old sticky header block */}
+      <PublicNavbar />
 
       <motion.main variants={container} initial="hidden" animate="show" className="px-6 flex flex-col gap-8 pt-4 max-w-7xl mx-auto w-full">
 
@@ -77,6 +53,7 @@ export default function Home() {
           {/* Hero Image */}
           <motion.div variants={imageReveal} className="relative w-full flex-1 max-w-md">
             <div className="relative w-full aspect-square bg-gray-200 rounded-[32px] shadow-2xl shadow-[#9d7de8]/10 overflow-hidden">
+               {/* Ensure you have the asset or change src */}
                <img 
                  src={heroImage.src} 
                  alt="Quilt Texture" 
@@ -169,6 +146,7 @@ export default function Home() {
       </motion.div>
 
       {/* --- BOTTOM NAV (Shared - Mobile Only) --- */}
+      {/* Kept this because standard navbars don't usually have bottom tabs */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
         <Link href="/" className={`flex flex-col items-center gap-0.5 ${pathname === '/' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
             <span className="material-symbols-outlined text-[24px]">home</span>
