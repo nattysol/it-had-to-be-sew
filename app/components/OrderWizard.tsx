@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { createClient } from 'next-sanity'
-import { useOrderStore } from '../store/useOrderStore'
+import { useOrderStore } from '../../store/useOrderStore'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const client = createClient({
