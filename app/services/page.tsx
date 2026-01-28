@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { motion, Variants } from 'framer-motion' // <--- Added Variants
+import { motion, Variants } from 'framer-motion'
 
 export default function ServicesPage() {
   
-  // --- FIX: Added ': Variants' ---
+  // Animation Variants
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -20,140 +20,199 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#111921] min-h-screen font-display text-[#0e1b12] dark:text-white pb-32">
+    <div className="bg-[#f6f6f8] dark:bg-[#161220] min-h-screen font-display text-[#0e1b12] dark:text-white pb-32 transition-colors duration-300">
       
-      {/* --- TOP NAV --- */}
-      <motion.div 
+      {/* --- HEADER --- */}
+      <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 flex items-center bg-[#f6f7f8]/90 backdrop-blur-md p-4 pb-2 justify-between border-b border-black/5"
+        className="sticky top-0 z-50 bg-[#f6f6f8]/80 dark:bg-[#161220]/80 backdrop-blur-md border-b border-black/5 dark:border-white/5"
       >
-        <Link href="/" className="flex size-12 shrink-0 items-center justify-center hover:bg-black/5 rounded-full transition active:scale-95">
-          <span className="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
-        </Link>
-        <h2 className="text-lg font-bold leading-tight flex-1 text-center pr-12">Services</h2>
-      </motion.div>
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 cursor-pointer group hover:opacity-70 transition-opacity">
+                <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back_ios_new</span>
+                <span className="font-bold text-lg">Services</span>
+            </Link>
+            <div className="hidden md:flex items-center gap-8">
+                <span className="text-[#9d7de8] font-bold text-sm tracking-wide">SERVICES</span>
+                <span className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors cursor-pointer">GALLERY</span>
+                <span className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors cursor-pointer">ABOUT</span>
+                <Link href="/wizard">
+                    <button className="bg-[#9d7de8] text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-sm hover:brightness-105 transition-all active:scale-95">BOOK NOW</button>
+                </Link>
+            </div>
+        </div>
+      </motion.header>
 
-      {/* --- HEADER --- */}
-      <div className="px-6 pt-8 pb-4">
-        <motion.h1 
-          initial={{ opacity: 0, x: -10 }} 
-          animate={{ opacity: 1, x: 0 }} 
-          className="tracking-tight text-[32px] font-bold leading-tight"
-        >
-          It Had To Be Sew
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ delay: 0.2 }}
-          className="text-[#4f6b57] font-serif italic text-lg leading-relaxed pt-3"
-        >
-            Utility-focused, precision quilting services designed with a quiet, refined touch.
-        </motion.p>
-      </div>
-
-      {/* --- SERVICE CARDS --- */}
-      <motion.div variants={container} initial="hidden" animate="show" className="flex flex-col gap-6 p-4">
+      <main className="max-w-7xl mx-auto w-full px-6 py-12 md:py-20">
         
-        {/* 1. Long-Arm */}
-        <motion.div variants={item} className="group relative flex flex-col rounded-[32px] bg-white shadow-sm overflow-hidden border border-black/5 active:scale-[0.99] transition-transform duration-300">
-          <div className="w-full aspect-[16/9] bg-gray-200 relative">
-             <img src="https://images.unsplash.com/photo-1634225252824-332309f44865?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          </div>
-          <div className="p-6 flex flex-col gap-3">
-            <div className="flex justify-between items-start">
-              <h3 className="text-2xl font-bold tracking-tight">Long-Arm Quilting</h3>
-              <span className="material-symbols-outlined text-[#9d7de8]">architecture</span>
-            </div>
-            <p className="text-[#4f6b57] font-serif text-base leading-relaxed">Precision and custom patterns for a flawless finish.</p>
-            <div className="flex items-center justify-between mt-2 pt-4 border-t border-black/5">
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider text-[#4f6b57] font-bold">Starts at</span>
-                <span className="font-bold text-lg">$0.02 / sq inch</span>
-              </div>
-              <Link href="/wizard">
-                <button className="h-11 px-6 bg-[#9d7de8] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#9d7de8]/20 hover:bg-[#8b6bd9] active:scale-95 transition-all">
-                    Inquire Now
-                </button>
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 2. Trimming */}
-        <motion.div variants={item} className="group relative flex flex-col rounded-[32px] bg-white shadow-sm overflow-hidden border border-black/5 active:scale-[0.99] transition-transform duration-300">
-          <div className="w-full aspect-[16/9] bg-gray-200 relative">
-             <img src="https://images.unsplash.com/photo-1598465037326-06e92787c8d7?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          </div>
-          <div className="p-6 flex flex-col gap-3">
-            <div className="flex justify-between items-start">
-              <h3 className="text-2xl font-bold tracking-tight">Quilt Trimming</h3>
-              <span className="material-symbols-outlined text-[#9d7de8]">content_cut</span>
-            </div>
-            <p className="text-[#4f6b57] font-serif text-base leading-relaxed">The essential squaring-up process for perfect edges.</p>
-            <div className="flex items-center justify-between mt-2 pt-4 border-t border-black/5">
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider text-[#4f6b57] font-bold">Standard rate</span>
-                <span className="font-bold text-lg">$15.00 flat fee</span>
-              </div>
-              <Link href="/wizard">
-                <button className="h-11 px-6 bg-[#9d7de8] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#9d7de8]/20 hover:bg-[#8b6bd9] active:scale-95 transition-all">
-                    Add Service
-                </button>
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 3. Binding */}
-        <motion.div variants={item} className="group relative flex flex-col rounded-[32px] bg-white shadow-sm overflow-hidden border border-black/5 active:scale-[0.99] transition-transform duration-300">
-          <div className="w-full aspect-[16/9] bg-gray-200 relative">
-             <img src="https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          </div>
-          <div className="p-6 flex flex-col gap-3">
-            <div className="flex justify-between items-start">
-              <h3 className="text-2xl font-bold tracking-tight">Binding</h3>
-              <span className="material-symbols-outlined text-[#9d7de8]">auto_fix_high</span>
-            </div>
-            <p className="text-[#4f6b57] font-serif text-base leading-relaxed">Durable and aesthetic machine-finished edge work.</p>
-            <div className="flex items-center justify-between mt-2 pt-4 border-t border-black/5">
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider text-[#4f6b57] font-bold">Per Linear Inch</span>
-                <span className="font-bold text-lg">$0.12 / inch</span>
-              </div>
-              <Link href="/wizard">
-                <button className="h-11 px-6 bg-[#9d7de8] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#9d7de8]/20 hover:bg-[#8b6bd9] active:scale-95 transition-all">
-                    Book Now
-                </button>
-              </Link>
-            </div>
-          </div>
-        </motion.div>
-
-      </motion.div>
-
-      {/* --- BOTTOM NAV --- */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl border-t border-black/5 flex items-center justify-around px-6 pb-2 z-50">
-        <Link href="/" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">home</span>
-          <span className="text-[10px] font-bold">Home</span>
-        </Link>
-        
-        {/* Active Item */}
-        <div className="flex flex-col items-center gap-1 text-[#9d7de8] p-2 rounded-xl bg-[#9d7de8]/10 w-16 relative">
-          <div className="absolute -top-1 w-1 h-1 bg-[#9d7de8] rounded-full"></div>
-          <span className="material-symbols-outlined text-[26px]">dry_cleaning</span>
-          <span className="text-[10px] font-bold">Services</span>
+        {/* --- HERO --- */}
+        <div className="max-w-2xl mb-16">
+            <motion.h1 
+                initial={{ opacity: 0, y: 20 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                className="text-[#0e1b12] dark:text-white tracking-tight text-4xl md:text-6xl font-bold leading-tight mb-4"
+            >
+                It Had To Be Sew
+            </motion.h1>
+            <motion.p 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                transition={{ delay: 0.2 }}
+                className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif italic text-xl md:text-2xl leading-relaxed"
+            >
+                Utility-focused, precision quilting services designed with a quiet, refined touch.
+            </motion.p>
         </div>
 
-        <Link href="/wizard" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">calendar_today</span>
-          <span className="text-[10px] font-bold">Booking</span>
+        {/* --- SERVICE CARDS --- */}
+        <motion.div variants={container} initial="hidden" animate="show" className="flex flex-col gap-12 md:gap-16">
+            
+            {/* 1. Long-Arm Quilting */}
+            <motion.div variants={item} className="group flex flex-col md:flex-row bg-white dark:bg-[#1a2e20] rounded-[24px] overflow-hidden border border-black/5 dark:border-white/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-transform duration-300">
+                <div className="w-full md:w-[400px] h-[300px] md:h-auto overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1634225252824-332309f44865?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Long arm quilting" />
+                </div>
+                <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+                    <div className="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 className="text-[#0e1b12] dark:text-white text-3xl font-bold leading-tight mb-2">Long-Arm Quilting</h2>
+                            <div className="flex gap-2">
+                                <span className="px-3 py-1 bg-[#9d7de8]/10 text-[#9d7de8] text-[10px] font-bold uppercase tracking-wider rounded-full">Precision-guided</span>
+                                <span className="px-3 py-1 bg-[#9d7de8]/10 text-[#9d7de8] text-[10px] font-bold uppercase tracking-wider rounded-full">Custom Patterns</span>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-[#9d7de8] text-4xl opacity-20">architecture</span>
+                    </div>
+                    <p className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif text-lg leading-relaxed mb-8 max-w-xl">
+                        Precision and custom patterns for a flawless finish. We offer both computerized and hand-guided work to bring your vision to life with professional-grade tension and stitch regulation.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-black/5 dark:border-white/10">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase tracking-wider text-[#4f6b57] dark:text-[#a0b8a7] font-bold">Base Investment</span>
+                            <span className="text-[#0e1b12] dark:text-white text-2xl font-bold">$0.02 / sq inch</span>
+                        </div>
+                        <Link href="/wizard">
+                            <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-14 px-8 bg-[#9d7de8] text-white text-base font-bold transition-all hover:brightness-105 active:scale-95 shadow-md shadow-[#9d7de8]/20">
+                                <span>Inquire Now</span>
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* 2. Quilt Trimming (Reversed) */}
+            <motion.div variants={item} className="group flex flex-col md:flex-row-reverse bg-white dark:bg-[#1a2e20] rounded-[24px] overflow-hidden border border-black/5 dark:border-white/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-transform duration-300">
+                <div className="w-full md:w-[400px] h-[300px] md:h-auto overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1598465037326-06e92787c8d7?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Quilt trimming" />
+                </div>
+                <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+                    <div className="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 className="text-[#0e1b12] dark:text-white text-3xl font-bold leading-tight mb-2">Quilt Trimming</h2>
+                            <div className="flex gap-2">
+                                <span className="px-3 py-1 bg-[#9d7de8]/10 text-[#9d7de8] text-[10px] font-bold uppercase tracking-wider rounded-full">Expert Squaring</span>
+                                <span className="px-3 py-1 bg-[#9d7de8]/10 text-[#9d7de8] text-[10px] font-bold uppercase tracking-wider rounded-full">Clean Edges</span>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-[#9d7de8] text-4xl opacity-20">content_cut</span>
+                    </div>
+                    <p className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif text-lg leading-relaxed mb-8 max-w-xl">
+                        The essential squaring-up process. We ensure your quilt is perfectly rectangular and clean-edged, using rotary precision to prepare your piece for professional binding.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-black/5 dark:border-white/10">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase tracking-wider text-[#4f6b57] dark:text-[#a0b8a7] font-bold">Standard rate</span>
+                            <span className="text-[#0e1b12] dark:text-white text-2xl font-bold">$15.00 flat fee</span>
+                        </div>
+                        <Link href="/wizard">
+                            <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-14 px-8 bg-[#9d7de8] text-white text-base font-bold transition-all hover:brightness-105 active:scale-95 shadow-md shadow-[#9d7de8]/20">
+                                <span>Add Service</span>
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* 3. Professional Binding */}
+            <motion.div variants={item} className="group flex flex-col md:flex-row bg-white dark:bg-[#1a2e20] rounded-[24px] overflow-hidden border border-black/5 dark:border-white/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-transform duration-300">
+                <div className="w-full md:w-[400px] h-[300px] md:h-auto overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Quilt binding" />
+                </div>
+                <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+                    <div className="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 className="text-[#0e1b12] dark:text-white text-3xl font-bold leading-tight mb-2">Professional Binding</h2>
+                            <div className="flex gap-2">
+                                <span className="px-3 py-1 bg-[#9d7de8]/10 text-[#9d7de8] text-[10px] font-bold uppercase tracking-wider rounded-full">Machine-Finished</span>
+                                <span className="px-3 py-1 bg-[#9d7de8]/10 text-[#9d7de8] text-[10px] font-bold uppercase tracking-wider rounded-full">Reinforced</span>
+                            </div>
+                        </div>
+                        <span className="material-symbols-outlined text-[#9d7de8] text-4xl opacity-20">auto_fix_high</span>
+                    </div>
+                    <p className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif text-lg leading-relaxed mb-8 max-w-xl">
+                        Durable and aesthetic machine-finished edge work. Choose from our curated selection of threads for the perfect final touch that ensures longevity for generations.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-6 pt-8 border-t border-black/5 dark:border-white/10">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase tracking-wider text-[#4f6b57] dark:text-[#a0b8a7] font-bold">Pricing Guide</span>
+                            <span className="text-[#0e1b12] dark:text-white text-2xl font-bold">$0.12 / linear inch</span>
+                        </div>
+                        <Link href="/wizard">
+                            <button className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-14 px-8 bg-[#9d7de8] text-white text-base font-bold transition-all hover:brightness-105 active:scale-95 shadow-md shadow-[#9d7de8]/20">
+                                <span>Book Now</span>
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+            </motion.div>
+
+        </motion.div>
+
+        {/* --- QUALITY BOX --- */}
+        <div className="mt-20 p-10 rounded-[24px] bg-[#9d7de8]/5 dark:bg-[#9d7de8]/10 border-dashed border-2 border-[#9d7de8]/20 flex flex-col md:flex-row items-center gap-8">
+            <div className="bg-[#9d7de8]/10 p-4 rounded-full">
+                <span className="material-symbols-outlined text-[#9d7de8] text-3xl">info</span>
+            </div>
+            <div className="text-center md:text-left">
+                <h3 className="font-bold text-xl text-[#0e1b12] dark:text-white mb-2">Our Quality Commitment</h3>
+                <p className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif text-lg leading-relaxed">
+                    Current turnaround time is 2-3 weeks. All quilts are treated with expert care in a smoke-free, pet-free studio environment. We treat every project like our own heirloom.
+                </p>
+            </div>
+        </div>
+
+      </main>
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-white dark:bg-[#0e1b12] border-t border-black/5 dark:border-white/5 py-12 pb-24">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-[#4f6b57] dark:text-[#a0b8a7] text-sm">© 2024 It Had To Be Sew. All rights reserved.</p>
+            <div className="flex gap-8">
+                <span className="material-symbols-outlined text-[#4f6b57] cursor-pointer hover:text-[#9d7de8] transition-colors">book</span>
+                <span className="material-symbols-outlined text-[#4f6b57] cursor-pointer hover:text-[#9d7de8] transition-colors">photo_camera</span>
+                <span className="material-symbols-outlined text-[#4f6b57] cursor-pointer hover:text-[#9d7de8] transition-colors">mail</span>
+            </div>
+        </div>
+      </footer>
+
+      {/* --- BOTTOM NAV --- */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
+        <Link href="/" className="flex flex-col items-center gap-0.5 text-[#4f6b57] dark:text-[#a0b8a7]">
+            <span className="material-symbols-outlined text-[24px]">home</span>
+            <span className="text-[10px] font-medium">Home</span>
         </Link>
-        <Link href="/contact" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">person</span>
-          <span className="text-[10px] font-bold">Contact</span>
+        <Link href="/services" className="flex flex-col items-center gap-0.5 text-[#9d7de8]">
+            <span className="material-symbols-outlined text-[24px]">dry_cleaning</span>
+            <span className="text-[10px] font-medium">Services</span>
+        </Link>
+        <Link href="/wizard" className="flex flex-col items-center gap-0.5 text-[#4f6b57] dark:text-[#a0b8a7]">
+            <span className="material-symbols-outlined text-[24px]">calendar_today</span>
+            <span className="text-[10px] font-medium">Booking</span>
+        </Link>
+        <Link href="/contact" className="flex flex-col items-center gap-0.5 text-[#4f6b57] dark:text-[#a0b8a7]">
+            <span className="material-symbols-outlined text-[24px]">person</span>
+            <span className="text-[10px] font-medium">Profile</span>
         </Link>
       </div>
 

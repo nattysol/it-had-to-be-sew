@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from 'next-sanity'
 import Link from 'next/link'
-import { motion, Variants } from 'framer-motion' // <--- Added Variants
+import { usePathname } from 'next/navigation'
+import { motion, Variants } from 'framer-motion'
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, 
@@ -13,13 +14,13 @@ const client = createClient({
 })
 
 export default function ContactPage() {
+  const pathname = usePathname()
   const [faqs, setFaqs] = useState<any[]>([])
 
   useEffect(() => {
     client.fetch(`*[_type == "faq"] | order(order asc)`).then(setFaqs)
   }, [])
 
-  // --- FIX: Added ': Variants' type annotation ---
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -34,11 +35,11 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="bg-[#f6f7f8] dark:bg-[#111921] min-h-screen font-display text-[#0e141b] dark:text-white pb-32">
+    <div className="bg-[#f6f6f8] dark:bg-[#161220] min-h-screen font-display text-[#0e1b12] dark:text-white pb-32 transition-colors duration-300">
       
       {/* --- TOP NAV --- */}
-      <div className="flex items-center bg-[#f6f7f8]/90 dark:bg-[#111921]/90 backdrop-blur-md p-4 pb-2 justify-between sticky top-0 z-20 border-b border-transparent transition-all">
-        <Link href="/" className="flex size-12 shrink-0 items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95">
+      <div className="flex items-center bg-[#f6f6f8]/90 dark:bg-[#161220]/90 backdrop-blur-md p-4 pb-2 justify-between sticky top-0 z-20 border-b border-transparent transition-all">
+        <Link href="/" className="flex size-12 shrink-0 items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 text-[#0e1b12] dark:text-white">
           <span className="material-symbols-outlined">arrow_back_ios_new</span>
         </Link>
         <h2 className="text-lg font-bold leading-tight flex-1 text-center pr-12">Contact & FAQs</h2>
@@ -56,7 +57,7 @@ export default function ContactPage() {
           <h3 className="tracking-tight text-3xl font-bold leading-tight">Let's bring your quilt to life</h3>
         </motion.div>
         <motion.div variants={item} className="pb-6">
-          <p className="text-[#507395] dark:text-gray-400 text-lg font-serif leading-relaxed italic">
+          <p className="text-[#4f6b57] dark:text-[#a0b8a7] text-lg font-serif leading-relaxed italic">
             Tell us about your project and we'll get back to you soon.
           </p>
         </motion.div>
@@ -64,15 +65,15 @@ export default function ContactPage() {
         {/* --- FORM --- */}
         <motion.section variants={item} className="space-y-5">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold px-2 text-[#0e141b]/80">Your Name</label>
+            <label className="text-sm font-bold px-2 text-[#0e1b12]/80 dark:text-white/80">Your Name</label>
             <input className="w-full h-14 rounded-full border-none bg-[#edf1f4] dark:bg-[#1c2631] px-6 text-base focus:ring-2 focus:ring-[#9d7de8] surface-sunken outline-none transition-shadow" placeholder="Full name" type="text"/>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold px-2 text-[#0e141b]/80">Email Address</label>
+            <label className="text-sm font-bold px-2 text-[#0e1b12]/80 dark:text-white/80">Email Address</label>
             <input className="w-full h-14 rounded-full border-none bg-[#edf1f4] dark:bg-[#1c2631] px-6 text-base focus:ring-2 focus:ring-[#9d7de8] surface-sunken outline-none transition-shadow" placeholder="email@example.com" type="email"/>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-bold px-2 text-[#0e141b]/80">Project Details</label>
+            <label className="text-sm font-bold px-2 text-[#0e1b12]/80 dark:text-white/80">Project Details</label>
             <textarea className="w-full rounded-[24px] border-none bg-[#edf1f4] dark:bg-[#1c2631] p-6 text-base focus:ring-2 focus:ring-[#9d7de8] surface-sunken resize-none outline-none transition-shadow" placeholder="Tell us about the size and style..." rows={4}></textarea>
           </div>
           <motion.button 
@@ -90,7 +91,7 @@ export default function ContactPage() {
         <motion.section variants={item} className="space-y-6">
           <div className="px-2">
             <h4 className="text-2xl font-bold mb-2">Frequently Asked</h4>
-            <p className="text-[#507395] dark:text-gray-400 text-sm">Common questions about the process.</p>
+            <p className="text-[#4f6b57] dark:text-[#a0b8a7] text-sm">Common questions about the process.</p>
           </div>
           
           <div className="space-y-4">
@@ -99,21 +100,21 @@ export default function ContactPage() {
                 key={faq._id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="group bg-white dark:bg-[#1c2631] rounded-[24px] surface-raised-card border border-black/5 overflow-hidden transition-all duration-300 hover:shadow-md"
+                className="group bg-white dark:bg-[#1a2e20] rounded-[24px] surface-raised-card border border-black/5 dark:border-white/5 overflow-hidden transition-all duration-300 hover:shadow-md"
               >
                 <summary className="flex items-center justify-between p-6 cursor-pointer select-none">
                   <span className="font-bold text-base pr-4 leading-tight">{faq.question}</span>
                   <span className="material-symbols-outlined text-[#9d7de8] chevron transition-transform duration-300 group-open:rotate-180">expand_more</span>
                 </summary>
                 <div className="px-6 pb-6 faq-body">
-                  <p className="text-[#507395] dark:text-gray-300 font-serif leading-relaxed">
+                  <p className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>
               </motion.details>
             )) : (
-              <div className="text-center p-8 text-gray-400 bg-white/50 rounded-3xl border border-dashed border-gray-200">
-                <span className="material-symbols-outlined text-4xl mb-2 opacity-20">quiz</span>
+              <div className="text-center p-8 text-[#4f6b57] bg-white/50 rounded-3xl border border-dashed border-[#4f6b57]/20">
+                <span className="material-symbols-outlined text-4xl mb-2 opacity-50">quiz</span>
                 <p>Loading FAQs...</p>
               </div>
             )}
@@ -122,8 +123,7 @@ export default function ContactPage() {
 
         {/* --- STUDIO INFO --- */}
         <motion.section variants={item} className="mt-16 mb-8">
-          <div className="bg-white dark:bg-[#1c2631] p-8 rounded-[2rem] surface-raised-card border border-black/5 relative overflow-hidden">
-            {/* Subtle purple accent blob */}
+          <div className="bg-white dark:bg-[#1a2e20] p-8 rounded-[2rem] surface-raised-card border border-black/5 dark:border-white/5 relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#9d7de8]/10 rounded-full blur-2xl pointer-events-none"></div>
 
             <h4 className="text-xl font-bold mb-6 relative z-10">Studio Info</h4>
@@ -134,7 +134,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold">The Studio</p>
-                  <p className="text-sm text-[#507395] dark:text-gray-400">By Appointment Only<br/>123 Stitch Lane, Quilt City</p>
+                  <p className="text-sm text-[#4f6b57] dark:text-[#a0b8a7]">By Appointment Only<br/>123 Stitch Lane, Quilt City</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -143,17 +143,17 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold">Email Us</p>
-                  <p className="text-sm text-[#507395] dark:text-gray-400">hello@ithadtobesew.com</p>
+                  <p className="text-sm text-[#4f6b57] dark:text-[#a0b8a7]">hello@ithadtobesew.com</p>
                 </div>
               </div>
               
               <div className="pt-4 border-t border-gray-100 dark:border-white/5 mt-2">
                 <p className="text-sm font-bold mb-3 px-1">Follow our process</p>
                 <div className="flex gap-4">
-                  <button className="size-12 rounded-full bg-[#f6f7f8] dark:bg-black/20 flex items-center justify-center text-[#507395] dark:text-gray-300 border border-black/5 hover:scale-110 hover:bg-white hover:shadow-md transition-all">
+                  <button className="size-12 rounded-full bg-[#f6f6f8] dark:bg-black/20 flex items-center justify-center text-[#4f6b57] dark:text-[#a0b8a7] border border-black/5 hover:scale-110 hover:bg-white hover:shadow-md transition-all">
                     <span className="material-symbols-outlined text-[20px]">camera_alt</span>
                   </button>
-                  <button className="size-12 rounded-full bg-[#f6f7f8] dark:bg-black/20 flex items-center justify-center text-[#507395] dark:text-gray-300 border border-black/5 hover:scale-110 hover:bg-white hover:shadow-md transition-all">
+                  <button className="size-12 rounded-full bg-[#f6f6f8] dark:bg-black/20 flex items-center justify-center text-[#4f6b57] dark:text-[#a0b8a7] border border-black/5 hover:scale-110 hover:bg-white hover:shadow-md transition-all">
                     <span className="material-symbols-outlined text-[20px]">share</span>
                   </button>
                 </div>
@@ -163,7 +163,7 @@ export default function ContactPage() {
         </motion.section>
 
         {/* Map Image Placeholder */}
-        <motion.div variants={item} className="w-full h-48 rounded-[2rem] overflow-hidden relative mb-8 shadow-inner border border-black/5">
+        <motion.div variants={item} className="w-full h-48 rounded-[2rem] overflow-hidden relative mb-8 shadow-inner border border-black/5 dark:border-white/5">
            <img 
              alt="Map location" 
              className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-700 hover:scale-105" 
@@ -173,31 +173,29 @@ export default function ContactPage() {
         </motion.div>
 
         <footer className="text-center py-4 pb-8">
-          <p className="text-xs text-[#507395] dark:text-gray-500 uppercase tracking-widest font-bold opacity-60">It Had To Be Sew • 2024</p>
+          <p className="text-xs text-[#4f6b57] dark:text-[#a0b8a7] uppercase tracking-widest font-bold opacity-60">It Had To Be Sew • 2024</p>
         </footer>
         
       </motion.main>
 
-      {/* --- BOTTOM NAV (Functional) --- */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 bg-white/90 dark:bg-[#111921]/90 backdrop-blur-xl border-t border-black/5 dark:border-white/5 flex items-center justify-around px-6 z-50 pb-2">
-        <Link href="/" className="flex flex-col items-center gap-1 text-[#507395] hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">home</span>
-          <span className="text-[10px] font-bold">Home</span>
+      {/* --- BOTTOM NAV (Shared) --- */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
+        <Link href="/" className={`flex flex-col items-center gap-0.5 ${pathname === '/' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">home</span>
+            <span className="text-[10px] font-medium">Home</span>
         </Link>
-        <Link href="/services" className="flex flex-col items-center gap-1 text-[#507395] hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">dry_cleaning</span>
-          <span className="text-[10px] font-bold">Services</span>
+        <Link href="/services" className={`flex flex-col items-center gap-0.5 ${pathname === '/services' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">dry_cleaning</span>
+            <span className="text-[10px] font-medium">Services</span>
         </Link>
-        <Link href="/wizard" className="flex flex-col items-center gap-1 text-[#507395] hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">calendar_today</span>
-          <span className="text-[10px] font-bold">Booking</span>
+        <Link href="/wizard" className={`flex flex-col items-center gap-0.5 ${pathname === '/wizard' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">calendar_today</span>
+            <span className="text-[10px] font-medium">Booking</span>
         </Link>
-        {/* Active State (Profile/Contact) */}
-        <div className="flex flex-col items-center gap-1 text-[#9d7de8] p-2 rounded-xl bg-[#9d7de8]/10 w-16 relative">
-          <div className="absolute -top-1 w-1 h-1 bg-[#9d7de8] rounded-full"></div>
-          <span className="material-symbols-outlined text-[26px] font-variation-fill">person</span>
-          <span className="text-[10px] font-bold">Profile</span>
-        </div>
+        <Link href="/contact" className={`flex flex-col items-center gap-0.5 ${pathname === '/contact' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">person</span>
+            <span className="text-[10px] font-medium">Profile</span>
+        </Link>
       </div>
 
     </div>

@@ -1,15 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { motion, Variants } from 'framer-motion' // <--- Added Variants
-import heroImage from './assets/home-hero.webp'
-import servicesImage from './assets/home-services.webp'
-import birdImage from './assets/home-bird.webp'
-import heartsImage from './assets/home-hearts.webp'
+import { usePathname } from 'next/navigation'
+import { motion, Variants } from 'framer-motion'
 
 export default function Home() {
+  const pathname = usePathname()
   
-  // --- FIX: Added ': Variants' ---
+  // Animation Variants
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -29,22 +27,22 @@ export default function Home() {
   }
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-32 bg-background-light dark:bg-background-dark font-display text-zinc-900 dark:text-white">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-32 bg-[#f6f6f8] dark:bg-[#161220] font-display text-[#0e1b12] dark:text-white transition-colors duration-300">
       
       {/* --- HEADER --- */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-50 flex items-center bg-background-light/80 backdrop-blur-xl p-4 justify-between"
+        className="sticky top-0 z-50 flex items-center bg-[#f6f6f8]/80 dark:bg-[#161220]/80 backdrop-blur-xl p-4 justify-between"
       >
         <div className="flex items-center gap-3">
-          <button className="flex size-10 items-center justify-center rounded-full bg-white shadow-sm hover:scale-105 transition active:scale-95">
+          <button className="flex size-10 items-center justify-center rounded-full bg-white dark:bg-[#1a2e20] shadow-sm hover:scale-105 transition active:scale-95 text-[#0e1b12] dark:text-white">
             <span className="material-symbols-outlined text-xl">menu</span>
           </button>
-          <h2 className="text-lg font-accent italic tracking-tight text-xl font-bold">It Had To Be Sew</h2>
+          <h2 className="text-lg font-serif italic tracking-tight font-bold">It Had To Be Sew</h2>
         </div>
-        <button className="flex size-10 items-center justify-center rounded-full bg-white shadow-sm hover:scale-105 transition active:scale-95">
+        <button className="flex size-10 items-center justify-center rounded-full bg-white dark:bg-[#1a2e20] shadow-sm hover:scale-105 transition active:scale-95 text-[#0e1b12] dark:text-white">
           <span className="material-symbols-outlined text-xl">search</span>
         </button>
       </motion.header>
@@ -58,7 +56,7 @@ export default function Home() {
               Precision Quilting.<br/>
               <span className="text-[#9d7de8] italic font-serif font-normal text-5xl">Human Touch.</span>
             </motion.h1>
-            <motion.p variants={item} className="text-lg leading-relaxed text-zinc-500 max-w-[320px] font-serif">
+            <motion.p variants={item} className="text-lg leading-relaxed text-[#4f6b57] dark:text-[#a0b8a7] max-w-[320px] font-serif">
               Elevate your handiwork with professional long-arm finishes.
             </motion.p>
           </div>
@@ -66,20 +64,19 @@ export default function Home() {
           {/* Hero Image */}
           <motion.div variants={imageReveal} className="relative w-full">
             <div className="relative w-full aspect-square bg-gray-200 rounded-[32px] shadow-2xl shadow-[#9d7de8]/10 overflow-hidden">
-               {/* Use your local image or this placeholder */}
                <img 
-                 src={heroImage.src}
+                 src="https://images.unsplash.com/photo-1588013626219-c4d633c3a447?q=80&w=800&auto=format&fit=crop" 
                  alt="Quilt Texture" 
                  className="object-cover w-full h-full hover:scale-105 transition-transform duration-700"
                />
-               <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[32px]"></div>
+               <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[32px]"></div>
             </div>
             {/* Floating Badge */}
             <motion.div 
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: -12 }}
               transition={{ delay: 0.5, type: "spring" }}
-              className="absolute -bottom-4 -left-2 w-24 h-24 bg-white/30 backdrop-blur-md rounded-2xl border border-white/40 flex items-center justify-center shadow-lg"
+              className="absolute -bottom-4 -left-2 w-24 h-24 bg-white/30 dark:bg-black/30 backdrop-blur-md rounded-2xl border border-white/40 flex items-center justify-center shadow-lg"
             >
               <span className="material-symbols-outlined text-4xl text-[#9d7de8]">texture</span>
             </motion.div>
@@ -96,14 +93,14 @@ export default function Home() {
           </motion.div>
           
           <div className="grid grid-cols-1 gap-6">
-            <motion.div variants={item} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="group relative flex flex-col gap-4 p-5 bg-white rounded-[32px] border border-black/5 shadow-sm">
+            <motion.div variants={item} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="group relative flex flex-col gap-4 p-5 bg-white dark:bg-[#1a2e20] rounded-[32px] border border-black/5 dark:border-white/5 shadow-sm">
               <div className="w-full aspect-[16/9] bg-gray-200 rounded-2xl overflow-hidden">
-                  <img src={servicesImage.src} className="w-full h-full object-cover"/>
+                  <img src="https://images.unsplash.com/photo-1628147879482-629dfc29d0f3?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover"/>
               </div>
               <div className="flex justify-between items-end">
                 <div>
                   <h3 className="font-bold text-lg">Custom Quilting</h3>
-                  <p className="text-zinc-400 text-sm font-serif italic">Intricate, one-of-a-kind stitch patterns</p>
+                  <p className="text-[#4f6b57] dark:text-[#a0b8a7] text-sm font-serif italic">Intricate, one-of-a-kind stitch patterns</p>
                 </div>
                 <span className="material-symbols-outlined text-[#9d7de8] bg-[#9d7de8]/10 p-3 rounded-full">auto_awesome</span>
               </div>
@@ -115,7 +112,7 @@ export default function Home() {
         <section className="py-4 pb-12">
           <motion.h2 variants={item} className="text-2xl font-bold tracking-tight mb-8">The Workflow</motion.h2>
           <div className="space-y-10 relative pl-2">
-            <div className="absolute left-[1.15rem] top-2 bottom-4 w-[1px] bg-zinc-200"></div>
+            <div className="absolute left-[1.15rem] top-2 bottom-4 w-[1px] bg-[#4f6b57]/20"></div>
             
             {[
               { id: '01', title: 'In-Take', desc: 'Drop off or mail your prepped quilt top.', active: false },
@@ -127,12 +124,12 @@ export default function Home() {
                 variants={item}
                 className="flex gap-6 items-start relative"
               >
-                <div className={`size-10 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm font-bold text-sm transition-colors ${step.active ? 'bg-[#9d7de8] text-white' : 'bg-white border border-zinc-200 text-zinc-500'}`}>
+                <div className={`size-10 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm font-bold text-sm transition-colors ${step.active ? 'bg-[#9d7de8] text-white' : 'bg-white dark:bg-[#1a2e20] border border-[#4f6b57]/20 text-[#4f6b57]'}`}>
                   {step.id}
                 </div>
                 <div>
                   <h4 className="font-bold text-lg leading-none">{step.title}</h4>
-                  <p className="text-sm text-zinc-500 font-serif leading-relaxed mt-1">{step.desc}</p>
+                  <p className="text-sm text-[#4f6b57] dark:text-[#a0b8a7] font-serif leading-relaxed mt-1">{step.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -149,35 +146,32 @@ export default function Home() {
         className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[40] w-[calc(100%-48px)] max-w-sm"
       >
         <Link href="/wizard">
-            <button className="flex w-full items-center justify-between overflow-hidden rounded-2xl h-16 pl-8 pr-3 bg-[#161220] text-white shadow-2xl active:scale-[0.98] transition-all hover:bg-black group">
+            <button className="flex w-full items-center justify-between overflow-hidden rounded-2xl h-16 pl-8 pr-3 bg-[#0e1b12] dark:bg-white text-white dark:text-[#0e1b12] shadow-2xl active:scale-[0.98] transition-all group">
               <span className="font-bold tracking-tight text-base">Start New Project</span>
-              <div className="bg-white/10 size-11 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+              <div className="bg-white/10 dark:bg-black/10 size-11 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
                   <span className="material-symbols-outlined">straighten</span>
               </div>
             </button>
         </Link>
       </motion.div>
 
-      {/* --- BOTTOM NAV --- */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl border-t border-black/5 flex items-center justify-around px-6 pb-2 z-50">
-        {/* Active Item */}
-        <div className="flex flex-col items-center gap-1 text-[#9d7de8] p-2 rounded-xl bg-[#9d7de8]/10 w-16 relative">
-          <div className="absolute -top-1 w-1 h-1 bg-[#9d7de8] rounded-full"></div>
-          <span className="material-symbols-outlined text-[26px] font-variation-fill">home</span>
-          <span className="text-[10px] font-bold">Home</span>
-        </div>
-        
-        <Link href="/services" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">dry_cleaning</span>
-          <span className="text-[10px] font-bold">Services</span>
+      {/* --- BOTTOM NAV (Shared) --- */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
+        <Link href="/" className={`flex flex-col items-center gap-0.5 ${pathname === '/' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">home</span>
+            <span className="text-[10px] font-medium">Home</span>
         </Link>
-        <Link href="/wizard" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">calendar_today</span>
-          <span className="text-[10px] font-bold">Booking</span>
+        <Link href="/services" className={`flex flex-col items-center gap-0.5 ${pathname === '/services' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">dry_cleaning</span>
+            <span className="text-[10px] font-medium">Services</span>
         </Link>
-        <Link href="/contact" className="flex flex-col items-center gap-1 text-zinc-400 hover:text-[#9d7de8] transition-colors p-2 rounded-xl hover:bg-[#9d7de8]/5 w-16">
-          <span className="material-symbols-outlined text-[26px]">person</span>
-          <span className="text-[10px] font-bold">Contact</span>
+        <Link href="/wizard" className={`flex flex-col items-center gap-0.5 ${pathname === '/wizard' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">calendar_today</span>
+            <span className="text-[10px] font-medium">Booking</span>
+        </Link>
+        <Link href="/contact" className={`flex flex-col items-center gap-0.5 ${pathname === '/contact' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
+            <span className="material-symbols-outlined text-[24px]">person</span>
+            <span className="text-[10px] font-medium">Profile</span>
         </Link>
       </div>
 
