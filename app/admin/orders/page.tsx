@@ -3,7 +3,7 @@ import OrderDashboard, { Order } from "./OrderDashboard";
 
 // 1. The GROQ Query to get active orders
 const activeOrdersQuery = `
-  *[_type == "order" && status in ["ready", "inProgress"]] | order(dueDate asc) {
+  *[_type == "order" && status in ["new", "processing", "inProgress"]] | order(dueDate asc) {
     "id": _id,
     clientName,
     "pattern": pattern->title, 
