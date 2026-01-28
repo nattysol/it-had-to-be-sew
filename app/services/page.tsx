@@ -74,7 +74,7 @@ export default function ServicesPage() {
             {/* 1. Long-Arm Quilting */}
             <motion.div variants={item} className="group flex flex-col md:flex-row bg-white dark:bg-[#1a2e20] rounded-[24px] overflow-hidden border border-black/5 dark:border-white/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-transform duration-300">
                 <div className="w-full md:w-[400px] h-[300px] md:h-auto overflow-hidden">
-                    <img src={longarmImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Long arm quilting" />
+                    <img src={longarmImage.src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Long arm quilting" />
                 </div>
                 <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
                     <div className="flex items-start justify-between mb-4">
@@ -107,7 +107,7 @@ export default function ServicesPage() {
             {/* 2. Quilt Trimming (Reversed) */}
             <motion.div variants={item} className="group flex flex-col md:flex-row-reverse bg-white dark:bg-[#1a2e20] rounded-[24px] overflow-hidden border border-black/5 dark:border-white/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-transform duration-300">
                 <div className="w-full md:w-[400px] h-[300px] md:h-auto overflow-hidden">
-                    <img src={trimmingImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Quilt trimming" />
+                    <img src={trimmingImage.src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Quilt trimming" />
                 </div>
                 <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
                     <div className="flex items-start justify-between mb-4">
@@ -140,7 +140,7 @@ export default function ServicesPage() {
             {/* 3. Professional Binding */}
             <motion.div variants={item} className="group flex flex-col md:flex-row bg-white dark:bg-[#1a2e20] rounded-[24px] overflow-hidden border border-black/5 dark:border-white/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-transform duration-300">
                 <div className="w-full md:w-[400px] h-[300px] md:h-auto overflow-hidden">
-                    <img src={bindingImage} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Quilt binding" />
+                    <img src={bindingImage.src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Quilt binding" />
                 </div>
                 <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
                     <div className="flex items-start justify-between mb-4">
