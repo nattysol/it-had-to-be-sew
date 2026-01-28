@@ -11,6 +11,14 @@ const client = createClient({
   apiVersion: '2024-01-01',
 })
 
+const US_STATES = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", 
+  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", 
+  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", 
+  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", 
+  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+];
+
 const BATTING_OPTIONS = [
   { id: 'hobbs-80-20', name: 'Hobbs 80/20', price: 0.004, desc: 'The classic choice. Soft & durable.' },
   { id: 'wool', name: 'Tuscany Wool', price: 0.008, desc: 'Extra loft and warmth. Hand-wash only.' },
@@ -192,7 +200,7 @@ export default function OrderWizard() {
           )}
 
            {/* ================= STEP 4: CONTACT & REVIEW ================= */}
-           {step === 4 && (
+          {step === 4 && (
             <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
               
               <h3 className={sectionTitle}>Contact Info</h3>
@@ -205,14 +213,35 @@ export default function OrderWizard() {
 
               <h3 className={sectionTitle}>Shipping Address</h3>
               <input placeholder="Street Address" className={`${inputClass} mb-3`} value={customer.address} onChange={(e) => updateCustomer('address', e.target.value)} />
+              
+              {/* CITY / STATE / ZIP ROW */}
               <div className="flex gap-3 mb-6">
-                 <input placeholder="City" className={`${inputClass} flex-1`} value={customer.city} onChange={(e) => updateCustomer('city', e.target.value)} />
-                 <input placeholder="Zip" className={`${inputClass} w-24`} value={customer.zip} onChange={(e) => updateCustomer('zip', e.target.value)} />
+                 {/* City (Flexible width) */}
+                 <div className="flex-[2]">
+                   <input placeholder="City" className="w-full p-3 rounded-xl border border-teal-200 bg-white text-zinc-900 outline-none focus:ring-2 focus:ring-[#9d7de8] placeholder:text-gray-400" value={customer.city} onChange={(e) => updateCustomer('city', e.target.value)} />
+                 </div>
+
+                 {/* State Dropdown (Fixed width) */}
+                 <div className="flex-1 min-w-[80px]">
+                   <select 
+                      className="w-full p-3 rounded-xl border border-teal-200 bg-white text-zinc-900 outline-none focus:ring-2 focus:ring-[#9d7de8] appearance-none" 
+                      value={customer.state} 
+                      onChange={(e) => updateCustomer('state', e.target.value)}
+                   >
+                     <option value="" disabled>State</option>
+                     {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                   </select>
+                 </div>
+
+                 {/* Zip (Fixed width) */}
+                 <div className="w-24">
+                   <input placeholder="Zip" className="w-full p-3 rounded-xl border border-teal-200 bg-white text-zinc-900 outline-none focus:ring-2 focus:ring-[#9d7de8] placeholder:text-gray-400" value={customer.zip} onChange={(e) => updateCustomer('zip', e.target.value)} />
+                 </div>
               </div>
 
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-3 mb-8 bg-white p-4 rounded-xl border border-teal-200">
                  <input type="checkbox" className="size-5 accent-[#9d7de8]" checked={consent.socialMedia} onChange={(e) => updateConsent('socialMedia', e.target.checked)} />
-                 <span className="text-sm">I allow photos of my quilt on social media.</span>
+                 <span className="text-sm text-zinc-600">I allow photos of my quilt on social media.</span>
               </div>
             </motion.div>
           )}
