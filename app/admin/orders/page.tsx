@@ -17,6 +17,9 @@ const activeOrdersQuery = `
     lowStock
   }
 `;
+// TEMPORARY RAW QUERY
+// This grabs the raw document so we can see the real field names
+const activeOrdersQuery = `*[_type == "order"]`;
 
 // 2. DEFINE THE COMPONENT SECOND
 export default async function ActiveOrdersPage() {
