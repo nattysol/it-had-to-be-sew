@@ -1,15 +1,22 @@
 import { type SchemaTypeDefinition } from 'sanity'
-
-// 1. Import your schemas
 import order from '../schemaTypes/order'
-import  inventoryItem  from '../schemaTypes/inventory' // Note: check if your inventory export is 'default' or named
 import pattern from '../schemaTypes/pattern'
+
+// We are defining this INLINE to force it to show up
+const inventoryItem = {
+  name: 'inventoryItem',
+  title: 'Inventory Item',
+  type: 'document',
+  fields: [
+    { name: 'name', title: 'Item Name', type: 'string' },
+    { name: 'stockLevel', title: 'Stock', type: 'number' }
+  ]
+}
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
-    // 2. Add them to this array
     order,
-    inventoryItem, 
-    pattern
+    pattern,
+    inventoryItem // 👈 It is right here!
   ],
 }
