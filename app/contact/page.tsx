@@ -5,6 +5,7 @@ import { createClient } from 'next-sanity'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, Variants } from 'framer-motion'
+import { PortableText } from '@portabletext/react' // <--- IMPORT THIS
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, 
@@ -37,19 +38,16 @@ export default function ContactPage() {
   return (
     <div className="bg-[#f6f6f8] dark:bg-[#161220] min-h-screen font-display text-[#0e1b12] dark:text-white pb-32 transition-colors duration-300">
       
-      {/* --- HEADER (Responsive) --- */}
+      {/* --- HEADER --- */}
       <header className="sticky top-0 z-50 bg-[#f6f6f8]/80 dark:bg-[#161220]/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            {/* Mobile: Back Button / Desktop: Logo */}
             <div className="flex items-center gap-3">
                 <Link href="/" className="md:hidden flex size-10 items-center justify-center rounded-full bg-white dark:bg-[#1a2e20] shadow-sm text-[#0e1b12] dark:text-white">
                      <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
                 </Link>
-                {/* Title shown on both */}
                 <span className="font-bold text-lg font-serif italic">Contact & FAQs</span>
             </div>
 
-            {/* Desktop Nav Links (Hidden on Mobile) */}
             <div className="hidden md:flex items-center gap-8">
                 <Link href="/" className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors">HOME</Link>
                 <Link href="/services" className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors">SERVICES</Link>
@@ -103,7 +101,7 @@ export default function ContactPage() {
 
         <div className="h-16"></div>
 
-        {/* --- FAQS --- */}
+        {/* --- FAQS (Now with Rich Text) --- */}
         <motion.section variants={item} className="space-y-6">
           <div className="px-2">
             <h4 className="text-2xl font-bold mb-2">Frequently Asked</h4>
@@ -122,11 +120,12 @@ export default function ContactPage() {
                   <span className="font-bold text-base pr-4 leading-tight">{faq.question}</span>
                   <span className="material-symbols-outlined text-[#9d7de8] chevron transition-transform duration-300 group-open:rotate-180">expand_more</span>
                 </summary>
-                <div className="px-6 pb-6 faq-body">
-                  <p className="text-[#4f6b57] dark:text-[#a0b8a7] font-serif leading-relaxed">
-                    {faq.answer}
-                  </p>
+                
+                {/* RICH TEXT RENDERER */}
+                <div className="px-6 pb-6 faq-body text-[#4f6b57] dark:text-[#a0b8a7] font-serif leading-relaxed prose prose-p:my-2 prose-a:text-[#9d7de8]">
+                   {faq.answer && <PortableText value={faq.answer} />}
                 </div>
+
               </motion.details>
             )) : (
               <div className="text-center p-8 text-[#4f6b57] bg-white/50 rounded-3xl border border-dashed border-[#4f6b57]/20">
@@ -162,31 +161,9 @@ export default function ContactPage() {
                   <p className="text-sm text-[#4f6b57] dark:text-[#a0b8a7]">hello@ithadtobesew.com</p>
                 </div>
               </div>
-              
-              <div className="pt-4 border-t border-gray-100 dark:border-white/5 mt-2">
-                <p className="text-sm font-bold mb-3 px-1">Follow our process</p>
-                <div className="flex gap-4">
-                  <button className="size-12 rounded-full bg-[#f6f6f8] dark:bg-black/20 flex items-center justify-center text-[#4f6b57] dark:text-[#a0b8a7] border border-black/5 hover:scale-110 hover:bg-white hover:shadow-md transition-all">
-                    <span className="material-symbols-outlined text-[20px]">camera_alt</span>
-                  </button>
-                  <button className="size-12 rounded-full bg-[#f6f6f8] dark:bg-black/20 flex items-center justify-center text-[#4f6b57] dark:text-[#a0b8a7] border border-black/5 hover:scale-110 hover:bg-white hover:shadow-md transition-all">
-                    <span className="material-symbols-outlined text-[20px]">share</span>
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </motion.section>
-
-        {/* Map Image Placeholder */}
-        <motion.div variants={item} className="w-full h-48 rounded-[2rem] overflow-hidden relative mb-8 shadow-inner border border-black/5 dark:border-white/5">
-           <img 
-             alt="Map location" 
-             className="w-full h-full object-cover opacity-80 grayscale hover:grayscale-0 transition-all duration-700 hover:scale-105" 
-             src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop"
-           />
-           <div className="absolute inset-0 bg-[#9d7de8]/10 pointer-events-none mix-blend-overlay"></div>
-        </motion.div>
 
         <footer className="text-center py-4 pb-8">
           <p className="text-xs text-[#4f6b57] dark:text-[#a0b8a7] uppercase tracking-widest font-bold opacity-60">It Had To Be Sew • 2024</p>
@@ -194,7 +171,7 @@ export default function ContactPage() {
         
       </motion.main>
 
-      {/* --- BOTTOM NAV (Shared - Mobile Only) --- */}
+      {/* --- BOTTOM NAV --- */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
         <Link href="/" className={`flex flex-col items-center gap-0.5 ${pathname === '/' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
             <span className="material-symbols-outlined text-[24px]">home</span>
