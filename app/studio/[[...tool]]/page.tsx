@@ -1,15 +1,17 @@
-/**
- * This route is responsible for the built-in authoring environment using Sanity Studio.
- * All routes under your studio path will be handled by this file using Next.js's 
- * optional catch-all routes feature.
- */
-import { NextStudio } from 'next-sanity/studio'
-import config from '../../../sanity.config'
+import { metadata as studioMetadata, viewport as studioViewport } from 'next-sanity/studio'
+import Studio from './Studio'
 
-export const dynamic = 'force-static'
+// Set up metadata for the Studio route
+export const metadata = {
+  ...studioMetadata,
+  title: 'Loading Studio...',
+}
 
-export { metadata, viewport } from 'next-sanity/studio'
+export const viewport = {
+  ...studioViewport,
+  interactiveWidget: 'resizes-content',
+}
 
 export default function StudioPage() {
-  return <NextStudio config={config} />
+  return <Studio />
 }
