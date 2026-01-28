@@ -32,11 +32,18 @@ export default function OrderDashboard({ initialOrders }: { initialOrders: Order
       </div>
     );
   }
-  
+
   return (
     <div className="bg-[#f6f6f8] dark:bg-[#151022] min-h-screen pb-24 font-sans text-[#131118] dark:text-white">
       {/* ... (Paste the Header & Main Grid Code from your previous page.tsx here) ... */}
-      
+     
+      {/* 👇 DEBUGGER: This will print the Raw Data on top of your screen */}
+      <div className="bg-black text-green-400 p-4 font-mono text-xs overflow-auto max-h-64 border-b-4 border-green-600">
+        <h3 className="font-bold text-white mb-2">DEBUG: RAW DATA FROM SANITY</h3>
+        <pre>{JSON.stringify(initialOrders, null, 2)}</pre>
+      </div>
+      {/* 👆 END DEBUGGER */}
+
       <main className="max-w-xl mx-auto p-4 space-y-6">
         <h2 className="text-lg font-bold font-display">Current Queue</h2>
         <div className="grid gap-6">
