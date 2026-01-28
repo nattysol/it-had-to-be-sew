@@ -20,6 +20,19 @@ export interface Order {
 export default function OrderDashboard({ initialOrders }: { initialOrders: Order[] }) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  // 👇 ADD THIS SAFETY CHECK
+  if (!initialOrders || initialOrders.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f6f6f8] dark:bg-[#151022] text-[#131118] dark:text-white">
+        <h2 className="text-xl font-bold mb-2">No Orders Found</h2>
+        <p className="opacity-60 mb-4">Check your Sanity connection or add an order.</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-[#652bee] text-white rounded-lg">
+          Refresh Page
+        </button>
+      </div>
+    );
+  }
+  
   return (
     <div className="bg-[#f6f6f8] dark:bg-[#151022] min-h-screen pb-24 font-sans text-[#131118] dark:text-white">
       {/* ... (Paste the Header & Main Grid Code from your previous page.tsx here) ... */}
