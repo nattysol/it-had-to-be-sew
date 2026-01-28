@@ -37,19 +37,35 @@ export default function ContactPage() {
   return (
     <div className="bg-[#f6f6f8] dark:bg-[#161220] min-h-screen font-display text-[#0e1b12] dark:text-white pb-32 transition-colors duration-300">
       
-      {/* --- TOP NAV --- */}
-      <div className="flex items-center bg-[#f6f6f8]/90 dark:bg-[#161220]/90 backdrop-blur-md p-4 pb-2 justify-between sticky top-0 z-20 border-b border-transparent transition-all">
-        <Link href="/" className="flex size-12 shrink-0 items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 text-[#0e1b12] dark:text-white">
-          <span className="material-symbols-outlined">arrow_back_ios_new</span>
-        </Link>
-        <h2 className="text-lg font-bold leading-tight flex-1 text-center pr-12">Contact & FAQs</h2>
-      </div>
+      {/* --- HEADER (Responsive) --- */}
+      <header className="sticky top-0 z-50 bg-[#f6f6f8]/80 dark:bg-[#161220]/80 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            {/* Mobile: Back Button / Desktop: Logo */}
+            <div className="flex items-center gap-3">
+                <Link href="/" className="md:hidden flex size-10 items-center justify-center rounded-full bg-white dark:bg-[#1a2e20] shadow-sm text-[#0e1b12] dark:text-white">
+                     <span className="material-symbols-outlined text-xl">arrow_back_ios_new</span>
+                </Link>
+                {/* Title shown on both */}
+                <span className="font-bold text-lg font-serif italic">Contact & FAQs</span>
+            </div>
+
+            {/* Desktop Nav Links (Hidden on Mobile) */}
+            <div className="hidden md:flex items-center gap-8">
+                <Link href="/" className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors">HOME</Link>
+                <Link href="/services" className="text-[#4f6b57] dark:text-[#a0b8a7] font-medium text-sm hover:text-[#9d7de8] transition-colors">SERVICES</Link>
+                <span className="text-[#9d7de8] font-bold text-sm tracking-wide cursor-pointer">CONTACT</span>
+                <Link href="/wizard">
+                    <button className="bg-[#9d7de8] text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-sm hover:brightness-105 transition-all active:scale-95">START PROJECT</button>
+                </Link>
+            </div>
+        </div>
+      </header>
 
       <motion.main 
         variants={container}
         initial="hidden"
         animate="show"
-        className="max-w-md mx-auto px-4"
+        className="max-w-md mx-auto px-4 mt-6"
       >
         
         {/* --- HERO --- */}
@@ -178,7 +194,7 @@ export default function ContactPage() {
         
       </motion.main>
 
-      {/* --- BOTTOM NAV (Shared) --- */}
+      {/* --- BOTTOM NAV (Shared - Mobile Only) --- */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
         <Link href="/" className={`flex flex-col items-center gap-0.5 ${pathname === '/' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
             <span className="material-symbols-outlined text-[24px]">home</span>
