@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion' // <--- Added Variants
 
 export default function ServicesPage() {
   
-  const container = {
+  // --- FIX: Added ': Variants' ---
+  const container: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -13,7 +14,7 @@ export default function ServicesPage() {
     }
   }
 
-  const item = {
+  const item: Variants = {
     hidden: { opacity: 0, y: 30 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
   }

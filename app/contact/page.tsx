@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from 'next-sanity'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion' // <--- Added Variants
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, 
@@ -19,8 +19,8 @@ export default function ContactPage() {
     client.fetch(`*[_type == "faq"] | order(order asc)`).then(setFaqs)
   }, [])
 
-  // Animation Variants
-  const container = {
+  // --- FIX: Added ': Variants' type annotation ---
+  const container: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -28,7 +28,7 @@ export default function ContactPage() {
     }
   }
 
-  const item = {
+  const item: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
   }
