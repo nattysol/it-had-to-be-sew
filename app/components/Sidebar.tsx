@@ -17,13 +17,14 @@ export const Sidebar = () => {
     <aside className="w-64 bg-brand-purple text-white flex flex-col h-screen sticky top-0 border-r border-white/10 shadow-2xl z-50">
       
       {/* BRAND HEADER */}
-      <div className="p-6 flex flex-col items-center justify-center border-b border-white/10 bg-[#32154d]">
-        <div className="relative w-40 h-32">
+      <div className="p-6 flex flex-col items-center justify-center border-b border-white/10 bg-[#2a1144]">
+        {/* 👇 Added bg-white and rounded-xl to make the logo visible */}
+        <div className="relative w-full h-24 bg-white rounded-xl shadow-lg p-2 flex items-center justify-center">
           <Image 
             src="/logo.png" 
             alt="It Had To Be Sew" 
             fill 
-            className="object-contain"
+            className="object-contain p-1"
             priority
           />
         </div>
