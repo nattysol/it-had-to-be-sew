@@ -2,6 +2,10 @@
 
 import Link from 'next/link'
 import { motion, Variants } from 'framer-motion' // <--- Added Variants
+import heroImage from './assets/home-hero.webp'
+import servicesImage from './assets/home-services.webp'
+import birdImage from './assets/home-bird.webp'
+import heartsImage from './assets/home-hearts.webp'
 
 export default function Home() {
   
@@ -64,7 +68,7 @@ export default function Home() {
             <div className="relative w-full aspect-square bg-gray-200 rounded-[32px] shadow-2xl shadow-[#9d7de8]/10 overflow-hidden">
                {/* Use your local image or this placeholder */}
                <img 
-                 src="https://images.unsplash.com/photo-1588013626219-c4d633c3a447?q=80&w=800&auto=format&fit=crop" 
+                 src={heroImage.src}
                  alt="Quilt Texture" 
                  className="object-cover w-full h-full hover:scale-105 transition-transform duration-700"
                />
@@ -94,7 +98,7 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-6">
             <motion.div variants={item} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="group relative flex flex-col gap-4 p-5 bg-white rounded-[32px] border border-black/5 shadow-sm">
               <div className="w-full aspect-[16/9] bg-gray-200 rounded-2xl overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1628147879482-629dfc29d0f3?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover"/>
+                  <img src={servicesImage.src} className="w-full h-full object-cover"/>
               </div>
               <div className="flex justify-between items-end">
                 <div>
