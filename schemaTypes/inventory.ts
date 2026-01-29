@@ -4,7 +4,15 @@ export default defineType({
   name: 'inventoryItem',
   title: 'Inventory Item',
   type: 'document',
+  fieldsets: [
+    { 
+      name: 'calibration', 
+      title: '📏 Unit Calibration (Manufacturer Specs)',
+      options: { collapsible: true, collapsed: false }
+    }
+  ],
   fields: [
+    // --- BASIC INFO ---
     defineField({
       name: 'name',
       title: 'Item Name',
@@ -26,8 +34,6 @@ export default defineType({
       },
       validation: Rule => Rule.required()
     }),
-    
-    // 📸 1. THE IMAGE FIELD
     defineField({
       name: 'image',
       title: 'Product Image',
@@ -35,16 +41,63 @@ export default defineType({
       options: { hotspot: true }
     }),
 
-    // ⚖️ 2. QUANTITY / WEIGHT (The Stock)
+    // --- ⚖️ CURRENT STOCK ---
     defineField({
       name: 'stockLevel',
-      title: 'Current Quantity / Weight',
+      title: 'Current Stock Remaining',
       type: 'number',
-      description: 'For Thread: Enter OUNCES (e.g. 4.5). For Batting: Enter INCHES.',
+      description: 'Current measured weight (oz) for thread, or length (inches) for batting.',
       validation: Rule => Rule.min(0)
     }),
 
-    // 🧵 3. THREAD SPECIFICS (Thickness)
+    // --- 📏 CALIBRATION FIELDS (New) ---
+    // These belong to the "fieldset" defined at the top
+    
+    // 1. FOR THREAD: Total Length vs Weight
+    defineField({
+      name: 'fullConeLength',
+      title: 'Full Cone Length (Yards)',
+      type: 'number',
+      description: 'How many yards are on a brand new cone? (e.g. 5000)',
+      fieldset: 'calibration',
+      hidden: ({document}) => document?.category !== 'thread',
+    }),
+    defineField({
+      name: 'fullConeWeight',
+      title: 'Full Cone Weight (oz)',
+      type: 'number',
+      description: 'Weight of the thread itself (minus the plastic cone) when new.',
+      fieldset: 'calibration',
+      hidden: ({document}) => document?.category !== 'thread',
+    }),
+    
+    // 2. FOR BATTING: Area
+    defineField({
+      name: 'battWidth',
+      title: 'Roll Width (Inches)',
+      type: 'number',
+      description: 'e.g. 90, 108, or 120',
+      fieldset: 'calibration',
+      hidden: ({document}) => document?.category !== 'batting',
+    }),
+    defineField({
+      name: 'fullRollLength',
+      title: 'Full Roll Length (Yards)',
+      type: 'number',
+      description: 'Total length of a new roll',
+      fieldset: 'calibration',
+      hidden: ({document}) => document?.category !== 'batting',
+    }),
+    defineField({
+      name: 'totalSqFt',
+      title: 'Total Area (Sq Ft)',
+      type: 'number',
+      description: 'Calculated automatically if you enter Width & Length, or enter manually.',
+      fieldset: 'calibration',
+      hidden: ({document}) => document?.category !== 'batting',
+    }),
+
+    // --- METADATA ---
     defineField({
       name: 'threadWeight',
       title: 'Thread Thickness (wt)',
@@ -52,17 +105,6 @@ export default defineType({
       description: 'e.g. 40, 50, or 60. (Only for threads)',
       hidden: ({document}) => document?.category !== 'thread',
     }),
-
-    // ⚙️ CALIBRATION (Hidden Advanced Field)
-    defineField({
-      name: 'yardsPerOz',
-      title: 'Yards Per Ounce',
-      type: 'number',
-      hidden: ({document}) => document?.category !== 'thread',
-      initialValue: 1000,
-      description: 'Standard 40wt thread is ~1000 yds/oz.'
-    }),
-
     defineField({
       name: 'isPublic',
       title: 'Show to Client?',
@@ -73,8 +115,16 @@ export default defineType({
   preview: {
     select: {
       title: 'name',
-      subtitle: 'stockLevel',
+      stock: 'stockLevel',
       media: 'image'
+    },
+    prepare(selection) {
+      const { title, stock, media } = selection
+      return {
+        title: title,
+        subtitle: `Stock: ${stock}`,
+        media: media
+      }
     }
   }
 })
