@@ -1,11 +1,12 @@
-export const dynamic = 'force-dynamic';
-
 import React, { Suspense } from 'react';
-
-// 👇 FIX: You MUST use curly braces { } around AdminDashboard
+import type { Metadata } from 'next'; // 👈 Added this import
+// ✅ Importing from the NEW file name to kill the zombie
 import { AdminDashboard } from '../../components/RealDashboard'; 
 
-export const metadata = {
+export const dynamic = 'force-dynamic';
+
+// 👇 Added ": Metadata" here to satisfy TypeScript
+export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
@@ -14,30 +15,19 @@ const ORDERS = [
   {
     id: '1',
     clientName: 'Sarah Jenkins',
-    pattern: 'Double Wedding Ring Pattern',
+    pattern: 'Double Wedding Ring',
     dimensions: '90" x 108" (King)',
     dueDate: 'Oct 15, 2023',
     status: 'Ready to Start',
     materialsAvailable: true,
     battingLength: 116,
     img: 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600&auto=format&fit=crop'
-  },
-  {
-    id: '2',
-    clientName: 'Michael Chen',
-    pattern: 'Modern Log Cabin',
-    dimensions: '60" x 60" (Throw)',
-    dueDate: 'Oct 22, 2023',
-    status: 'In Progress',
-    lowStock: true,
-    battingLength: 68,
-    img: 'https://images.unsplash.com/photo-1524355529124-749e75556214?q=80&w=600&auto=format&fit=crop'
   }
 ];
 
 export default function QueuePage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Dashboard...</div>}>
+    <Suspense fallback={<div className="p-12 text-center">Loading...</div>}>
       <AdminDashboard initialOrders={ORDERS} />
     </Suspense>
   );
