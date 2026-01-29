@@ -1,5 +1,8 @@
 import React, { Suspense } from 'react';
-import { AdminDashboard } from '../../components/AdminDashboard'; // 👈 Make sure this matches your file path
+import { AdminDashboard } from '../../components/AdminDashboard';
+
+// 👇 THIS LINE FIXES THE VERCEL DEPLOYMENT
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Admin Dashboard | It Had To Be Sew',
