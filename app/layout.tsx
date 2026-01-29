@@ -1,4 +1,4 @@
-import { Sidebar } from "../../components/Sidebar"; // Adjust path if needed
+import { Sidebar } from "../app/components/Sidebar"; // Adjust path if needed
 
 export default function AdminLayout({
   children,
