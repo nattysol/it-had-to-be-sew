@@ -120,7 +120,7 @@ const InventoryView = () => (
 
 // --- MAIN SHELL ---
 // 👇 THIS IS THE FIX: The export name now matches "DashboardShell"
-export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) => {
+export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<'orders' | 'inventory'>('orders');
