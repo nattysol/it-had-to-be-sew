@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import React, { Suspense } from 'react';
 
 // 👇 FIX: You MUST use curly braces { } around AdminDashboard
-import { AdminDashboard } from '../../components/AdminDashboard'; 
+import { AdminDashboard } from '../../components/RealDashboard'; 
 
 export const metadata = {
   title: 'Admin Queue | It Had To Be Sew',
