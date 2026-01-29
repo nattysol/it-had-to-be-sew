@@ -1,11 +1,11 @@
-import React, { Suspense } from 'react'; // 👈 1. Import Suspense
-import { AdminDashboard } from '../../components/AdminDashboard';
+import React, { Suspense } from 'react';
+import { AdminDashboard } from '../../components/AdminDashboard'; // 👈 Make sure this matches your file path
 
 export const metadata = {
   title: 'Admin Dashboard | It Had To Be Sew',
 };
 
-// Mock Data (Replace with Sanity fetch in production)
+// Mock Data
 const ORDERS = [
   {
     id: '1',
@@ -33,11 +33,8 @@ const ORDERS = [
 
 export default function Page() {
   return (
-    <main className="bg-[#f6f6f8] dark:bg-[#151022] min-h-screen pb-24 font-sans text-[#131118] dark:text-white">
-      {/* 👇 2. Wrap the component that uses useSearchParams in Suspense */}
-      <Suspense fallback={<div className="p-12 text-center">Loading Dashboard...</div>}>
-        <AdminDashboard initialOrders={ORDERS} />
-      </Suspense>
-    </main>
+    <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Dashboard...</div>}>
+      <AdminDashboard initialOrders={ORDERS} />
+    </Suspense>
   );
 }
