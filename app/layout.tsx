@@ -1,28 +1,19 @@
-import { Epilogue, Lora, Instrument_Serif, Inter} from 'next/font/google' // Import Google Fonts
-import './globals.css'
-import type { Metadata } from "next"
+import { Sidebar } from "../app/components/Sidebar";
 
-// Configure the fonts
-const epilogue = Epilogue({ subsets: ['latin'], variable: '--font-epilogue' })
-const lora = Lora({ subsets: ['latin'], variable: '--font-lora' })
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const instrument = Instrument_Serif({ weight: '400', subsets: ['latin'], variable: '--font-instrument' })
-
-export const metadata: Metadata = {
-  title: "It Had To Be Sew - Admin",
-  description: "Production Management Dashboard",
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-      </head>
-      {/* Inject variables into the body */}
-      <body className={`${epilogue.variable} ${lora.variable} ${instrument.variable} font-serif bg-background-light text-[#1a2e2b]`}>
+    <div className="flex min-h-screen bg-[#f6f6f8] dark:bg-[#151022]">
+      {/* 1. Sidebar (Fixed on Desktop, Hidden Drawer on Mobile) */}
+      <Sidebar />
+      
+      {/* 2. Main Content */}
+      <main className="flex-1 h-screen overflow-y-auto w-full pt-16 md:pt-0">
         {children}
-      </body>
-    </html>
-  )
+      </main>
+    </div>
+  );
 }
