@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
@@ -19,13 +19,11 @@ export interface Order {
   img: string;
 }
 
-// --- SUB-COMPONENTS (Views) ---
-
-// 1. ORDERS VIEW (The Grid)
+// --- SUB-COMPONENTS ---
 const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: string) => void }) => (
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="flex items-center justify-between">
-      <h2 className="text-lg font-bold font-display">Current Queue</h2>
+      <h2 className="text-lg font-bold font-serif">Current Queue</h2>
       <button className="bg-[#652bee]/10 text-[#652bee] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#652bee]/20 transition-colors">
         Filter
       </button>
@@ -35,7 +33,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
         <div 
           key={order.id}
           onClick={() => openOrder(order.id)}
-          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-shadow group relative"
+          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-shadow groupKv relative"
         >
           <div className="p-5 relative z-10">
             <div className="flex justify-between items-start mb-4">
@@ -45,7 +43,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
                 }`}>
                   {order.status}
                 </span>
-                <h3 className="text-xl font-bold font-display leading-tight group-hover:text-[#652bee] transition-colors">
+                <h3 className="text-xl font-bold font-serif leading-tight group-hover:text-[#652bee] transition-colors">
                   {order.clientName}
                 </h3>
               </div>
@@ -81,10 +79,8 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
   </div>
 );
 
-// 2. INVENTORY VIEW (The Manager)
 const InventoryView = () => (
   <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-    {/* Alert Banner */}
     <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 p-4 rounded-xl flex items-start gap-3">
       <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">warning</span>
       <div>
@@ -94,8 +90,6 @@ const InventoryView = () => (
         </p>
       </div>
     </div>
-
-    {/* Thread Card */}
     <div className="bg-white dark:bg-[#1e1635] p-6 rounded-2xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445]">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-3">
@@ -111,55 +105,26 @@ const InventoryView = () => (
           <span className="material-symbols-outlined text-base">scale</span> Reconcile
         </button>
       </div>
-      
-      {/* Visual Cone Meter */}
       <div className="flex gap-4 items-end h-32 mb-2">
          <div className="w-12 h-full bg-slate-100 rounded-lg relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 bg-[#652bee] h-[40%] transition-all duration-1000"></div>
          </div>
          <div className="flex-1 pb-2">
-            <p className="text-3xl font-bold font-display">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
+            <p className="text-3xl font-bold font-serif">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
             <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Remaining Capacity</p>
          </div>
-      </div>
-    </div>
-
-    {/* Batting Card */}
-    <div className="bg-white dark:bg-[#1e1635] p-6 rounded-2xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445]">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center gap-3">
-          <div className="size-10 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center">
-            <span className="material-symbols-outlined text-slate-500">layers</span>
-          </div>
-          <div>
-            <h3 className="font-bold text-lg">Hobbs 80/20 Roll</h3>
-            <p className="text-xs text-slate-500 font-mono">Roll #09</p>
-          </div>
-        </div>
-        <button className="text-[#652bee] text-sm font-bold hover:bg-[#652bee]/5 px-2 py-1 rounded-lg">Edit</button>
-      </div>
-      
-      {/* Linear Meter */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm font-bold">
-           <span>450 inches left</span>
-           <span className="text-slate-400">50%</span>
-        </div>
-        <div className="h-4 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
-           <div className="h-full bg-orange-400 w-[50%] rounded-full"></div>
-        </div>
       </div>
     </div>
   </div>
 );
 
-// --- MAIN DASHBOARD COMPONENT ---
+// --- MAIN SHELL ---
+// 👇 THIS IS THE CRITICAL CHANGE: Named export matching the file name
 export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<'orders' | 'inventory'>('orders');
 
-  // URL State for Modal
   const activeOrderId = searchParams.get('orderId');
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
@@ -172,11 +137,10 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
 
   return (
     <div className="flex min-h-screen bg-[#f6f6f8] dark:bg-[#151022] font-sans text-[#131118] dark:text-white">
-      
-      {/* 1. DESKTOP SIDEBAR (Hidden on Mobile) */}
+      {/* SIDEBAR (Desktop) */}
       <aside className="hidden md:flex flex-col w-64 border-r border-[#dedbe6] dark:border-[#332a4d] bg-white/50 dark:bg-[#1e1635]/50 backdrop-blur-xl fixed inset-y-0 z-20">
          <div className="p-6">
-            <h1 className="text-xl font-bold font-display tracking-tight text-[#652bee]">It Had To Be Sew</h1>
+            <h1 className="text-xl font-bold font-serif tracking-tight text-[#652bee]">It Had To Be Sew</h1>
          </div>
          <nav className="flex-1 px-4 space-y-2">
             <NavButton 
@@ -197,7 +161,7 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
          </nav>
       </aside>
 
-      {/* 2. MAIN CONTENT AREA */}
+      {/* CONTENT */}
       <main className="flex-1 md:ml-64 pb-32 md:pb-10">
          {/* Mobile Header */}
          <header className="sticky top-0 z-40 bg-[#f6f6f8]/80 dark:bg-[#151022]/80 backdrop-blur-md border-b border-[#dedbe6] dark:border-[#332a4d] md:hidden">
@@ -206,14 +170,14 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
                   <div className="bg-[#652bee]/10 p-2 rounded-lg">
                      <span className="material-symbols-outlined text-[#652bee]">{currentView === 'orders' ? 'grid_view' : 'inventory_2'}</span>
                   </div>
-                  <h1 className="text-xl font-bold font-display tracking-tight capitalize">{currentView}</h1>
+                  <h1 className="text-xl font-bold font-serif tracking-tight capitalize">{currentView}</h1>
                </div>
             </div>
          </header>
 
          {/* Desktop Header */}
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
-             <h2 className="text-3xl font-bold font-display capitalize">{currentView} Dashboard</h2>
+             <h2 className="text-3xl font-bold font-serif capitalize">{currentView} Dashboard</h2>
              <div className="flex items-center gap-4">
                 <span className="text-sm font-bold opacity-60">Admin User</span>
                 <div className="size-10 bg-gray-200 rounded-full"></div>
@@ -229,7 +193,7 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
          </div>
       </main>
 
-      {/* 3. MOBILE BOTTOM NAV (Hidden on Desktop) */}
+      {/* MOBILE NAV */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#1e1635]/95 backdrop-blur-md border-t border-[#dedbe6] dark:border-[#332a4d] pb-8 pt-3 px-6 z-50 md:hidden flex justify-between items-center">
          <MobileNavItem icon="assignment" label="Orders" active={currentView === 'orders'} onClick={() => setCurrentView('orders')} />
          <MobileNavItem icon="inventory_2" label="Stock" active={currentView === 'inventory'} onClick={() => setCurrentView('inventory')} />
@@ -237,13 +201,12 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
          <MobileNavItem icon="settings" label="Setup" active={false} onClick={() => {}} />
       </nav>
 
-      {/* 4. MODAL */}
+      {/* MODAL */}
       <ProjectWorkspaceModal order={selectedOrder} isOpen={!!selectedOrder} onClose={closeOrder} />
     </div>
   );
 };
 
-// --- HELPER COMPONENTS ---
 const NavButton = ({ icon, label, active, onClick }: { icon: string, label: string, active: boolean, onClick: () => void }) => (
   <button 
     onClick={onClick}

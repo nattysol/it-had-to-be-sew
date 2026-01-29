@@ -1,14 +1,14 @@
-// 👇 Forces the server to rebuild this page on every request
 export const dynamic = 'force-dynamic';
 
 import React, { Suspense } from 'react';
+// 👇 Ensure this matches the named export from the file above
 import { DashboardShell } from '../../components/DashboardShell'; 
 
 export const metadata = {
   title: 'Admin Dashboard | It Had To Be Sew',
 };
 
-// Mock Data
+// 👇 RE-INSERTED THIS DATA
 const ORDERS = [
   {
     id: '1',
