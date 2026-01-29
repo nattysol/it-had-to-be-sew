@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ProjectWorkspaceModal, Order } from '../../components/ProjectWorkspaceModal';
 
-// Re-export Order type for the page.tsx to use
+// Re-export Order type for the page to use
 export type { Order };
 
 // Helper to format currency
@@ -23,20 +23,20 @@ export default function OrderDashboard({
   const displayedOrders = tab === 'queue' ? activeOrders : completedOrders;
 
   return (
-    <div className="bg-brand-light/30 dark:bg-[#151022] min-h-screen pb-24 font-sans text-brand-purple dark:text-white">
+    <div className="min-h-screen pb-24 font-sans text-brand-purple dark:text-white">
       
       {/* HEADER with TABS */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#151022]/80 backdrop-blur-md border-b border-brand-purple/10 dark:border-[#332a4d]">
-        <div className="max-w-xl mx-auto p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-serif font-bold tracking-tight text-brand-purple dark:text-white">
+      <header className="sticky top-0 z-40 bg-brand-light/90 dark:bg-[#151022]/90 backdrop-blur-md border-b border-brand-purple/10">
+        <div className="max-w-2xl mx-auto p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-serif font-bold tracking-tight text-brand-purple dark:text-white">
               Orders
             </h1>
             
             {/* Profit Pulse (Only shows in history tab) */}
             {tab === 'history' && (
               <div className="text-right animate-in fade-in slide-in-from-right-4">
-                <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">Total Revenue</p>
+                <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">Revenue</p>
                 <p className="text-xl font-bold text-brand-teal font-mono">
                   {formatMoney(completedOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0))}
                 </p>
@@ -45,10 +45,10 @@ export default function OrderDashboard({
           </div>
           
           {/* BRANDED TABS */}
-          <div className="flex bg-brand-purple/5 dark:bg-[#2d2445] p-1 rounded-xl">
+          <div className="flex bg-brand-purple/5 dark:bg-[#2d2445] p-1.5 rounded-xl">
             <button 
               onClick={() => setTab('queue')}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+              className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${
                 tab === 'queue' 
                   ? 'bg-brand-purple text-white shadow-md shadow-brand-purple/20' 
                   : 'text-brand-purple/60 hover:text-brand-purple'
@@ -58,7 +58,7 @@ export default function OrderDashboard({
             </button>
             <button 
               onClick={() => setTab('history')}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+              className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${
                 tab === 'history' 
                   ? 'bg-brand-teal text-white shadow-md shadow-brand-teal/20' 
                   : 'text-brand-purple/60 hover:text-brand-teal'
@@ -71,12 +71,14 @@ export default function OrderDashboard({
       </header>
 
       {/* MAIN LIST */}
-      <main className="max-w-xl mx-auto p-4 space-y-6">
+      <main className="max-w-2xl mx-auto p-6 space-y-4">
         
         {/* Empty State */}
         {displayedOrders.length === 0 ? (
           <div className="text-center py-20 opacity-50 flex flex-col items-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-brand-purple/20">inbox</span>
+            <div className="w-16 h-16 bg-brand-purple/5 rounded-full flex items-center justify-center text-brand-purple/40">
+                <span className="material-symbols-outlined text-3xl">inbox</span>
+            </div>
             <p>No orders found in this view.</p>
           </div>
         ) : (
@@ -90,7 +92,7 @@ export default function OrderDashboard({
                   : 'opacity-90'
               }`}
             >
-              <div className="p-5">
+              <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     {/* BRANDED STATUS PILL */}
@@ -118,7 +120,7 @@ export default function OrderDashboard({
                 {/* SHOW DIFFERENT DATA BASED ON TAB */}
                 {tab === 'queue' ? (
                   // QUEUE VIEW
-                  <div className="space-y-4 mb-2">
+                  <div className="space-y-4 mb-1">
                     <div className="flex items-center gap-3 text-brand-purple/60 dark:text-white/60">
                        <span className="material-symbols-outlined text-lg">straighten</span>
                        <p className="text-sm font-medium">{order.dimensions}</p>
@@ -134,7 +136,6 @@ export default function OrderDashboard({
                   <div className="grid grid-cols-2 gap-4 mt-4 bg-brand-light/50 dark:bg-white/5 p-3 rounded-lg border border-brand-purple/5">
                     <div>
                       <p className="text-[10px] uppercase font-bold opacity-50 text-brand-purple">Hourly Rate</p>
-                      {/* Calculate Hourly Rate: Price / Hours */}
                       <p className="text-lg font-bold font-mono text-brand-teal">
                          {order.actualTimeSeconds ? formatMoney((order.totalPrice || 0) / (order.actualTimeSeconds / 3600)) : '$--'}/hr
                       </p>
