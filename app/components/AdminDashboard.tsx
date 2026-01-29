@@ -3,8 +3,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-// If this import causes a crash later, we will comment it out.
-import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
 
 // --- TYPES ---
 export interface Order {
@@ -119,7 +117,7 @@ const InventoryView = () => (
   </div>
 );
 
-// 👇 THIS IS THE CRITICAL EXPORT
+// ✅ EXPORT NAME MATCHES
 export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -167,7 +165,11 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
          </div>
       </main>
 
-      <ProjectWorkspaceModal order={selectedOrder} isOpen={!!selectedOrder} onClose={closeOrder} />
+      {/* MOBILE NAV FOR SAFETY */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden">
+          <button onClick={() => setCurrentView('orders')}>Orders</button>
+          <button onClick={() => setCurrentView('inventory')}>Stock</button>
+      </nav>
     </div>
   );
 };
