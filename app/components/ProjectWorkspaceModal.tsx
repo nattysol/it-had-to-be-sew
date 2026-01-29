@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 // import { completeOrder } from '../../app/actions'; 
 
 // --- Types ---
-interface Order {
+export interface Order { // 👈 Added "export"
   id: string;
   clientName: string;
   pattern: string;
