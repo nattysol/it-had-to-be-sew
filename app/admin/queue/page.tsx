@@ -1,23 +1,43 @@
-import React from 'react';
-import type { Metadata } from 'next'; // 👈 Added this import
-import { TestDashboard } from '../../components/AdminDashboard'; 
-
 export const dynamic = 'force-dynamic';
 
-// 👇 Added ": Metadata" type annotation
-export const metadata: Metadata = {
-  title: 'Queue Test | It Had To Be Sew',
+import React, { Suspense } from 'react';
+// ✅ Importing the restored component
+import { AdminDashboard } from '../../components/AdminDashboard'; 
+
+export const metadata = {
+  title: 'Admin Queue | It Had To Be Sew',
 };
 
-const TEST_ORDERS = [
-  { id: '1', clientName: 'Test Order A' },
-  { id: '2', clientName: 'Test Order B' }
+// --- MOCK DATA IS BACK ---
+const ORDERS = [
+  {
+    id: '1',
+    clientName: 'Sarah Jenkins',
+    pattern: 'Double Wedding Ring Pattern',
+    dimensions: '90" x 108" (King)',
+    dueDate: 'Oct 15, 2023',
+    status: 'Ready to Start',
+    materialsAvailable: true,
+    battingLength: 116,
+    img: 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600&auto=format&fit=crop'
+  },
+  {
+    id: '2',
+    clientName: 'Michael Chen',
+    pattern: 'Modern Log Cabin',
+    dimensions: '60" x 60" (Throw)',
+    dueDate: 'Oct 22, 2023',
+    status: 'In Progress',
+    lowStock: true,
+    battingLength: 68,
+    img: 'https://images.unsplash.com/photo-1524355529124-749e75556214?q=80&w=600&auto=format&fit=crop'
+  }
 ];
 
 export default function QueuePage() {
   return (
-    <div className="min-h-screen bg-slate-100">
-      <TestDashboard initialOrders={TEST_ORDERS} />
-    </div>
+    <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Dashboard...</div>}>
+      <AdminDashboard initialOrders={ORDERS} />
+    </Suspense>
   );
 }
