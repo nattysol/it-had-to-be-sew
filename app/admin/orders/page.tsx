@@ -1,6 +1,3 @@
-// app/admin/orders/page.tsx
-
-// 👇 1. THIS CONFIG MUST BE HERE (Server Side)
 export const dynamic = 'force-dynamic';
 
 import React, { Suspense } from 'react';
