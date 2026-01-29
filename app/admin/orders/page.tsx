@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { Suspense } from 'react';
+// 👇 FIX: Import "AdminDashboard" (matches the export), not "DashboardShell"
 import { AdminDashboard } from '../../components/AdminDashboard'; 
 
 export const metadata = {
@@ -35,7 +36,8 @@ const ORDERS = [
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-12 text-center">Loading Dashboard...</div>}>
+    <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Dashboard...</div>}>
+      {/* 👇 FIX: Use the corrected component name here too */}
       <AdminDashboard initialOrders={ORDERS} />
     </Suspense>
   );
