@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-// ✅ Keep this import. If it crashes later, we'll know it's the modal.
+// If this import causes a crash later, we will comment it out.
 import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
 
 // --- TYPES ---
@@ -119,6 +119,7 @@ const InventoryView = () => (
   </div>
 );
 
+// 👇 THIS IS THE CRITICAL EXPORT
 export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -128,7 +129,6 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
   const openOrder = (id: string) => {
-    // ✅ Updated route
     router.push(`/admin/queue?orderId=${id}`, { scroll: false });
   };
   const closeOrder = () => {
