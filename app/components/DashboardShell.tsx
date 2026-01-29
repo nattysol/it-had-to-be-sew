@@ -23,7 +23,7 @@ export interface Order {
 const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: string) => void }) => (
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div className="flex items-center justify-between">
-      <h2 className="text-lg font-bold font-serif">Current Queue</h2>
+      <h2 className="text-lg font-bold font-display">Current Queue</h2>
       <button className="bg-[#652bee]/10 text-[#652bee] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#652bee]/20 transition-colors">
         Filter
       </button>
@@ -33,7 +33,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
         <div 
           key={order.id}
           onClick={() => openOrder(order.id)}
-          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-shadow groupKv relative"
+          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-shadow group relative"
         >
           <div className="p-5 relative z-10">
             <div className="flex justify-between items-start mb-4">
@@ -43,7 +43,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
                 }`}>
                   {order.status}
                 </span>
-                <h3 className="text-xl font-bold font-serif leading-tight group-hover:text-[#652bee] transition-colors">
+                <h3 className="text-xl font-bold font-display leading-tight group-hover:text-[#652bee] transition-colors">
                   {order.clientName}
                 </h3>
               </div>
@@ -110,7 +110,7 @@ const InventoryView = () => (
             <div className="absolute bottom-0 left-0 right-0 bg-[#652bee] h-[40%] transition-all duration-1000"></div>
          </div>
          <div className="flex-1 pb-2">
-            <p className="text-3xl font-bold font-serif">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
+            <p className="text-3xl font-bold font-display">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
             <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Remaining Capacity</p>
          </div>
       </div>
@@ -119,7 +119,7 @@ const InventoryView = () => (
 );
 
 // --- MAIN SHELL ---
-// 👇 THIS IS THE CRITICAL CHANGE: Named export matching the file name
+// 👇 THIS IS THE FIX: The export name now matches "DashboardShell"
 export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -140,7 +140,7 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
       {/* SIDEBAR (Desktop) */}
       <aside className="hidden md:flex flex-col w-64 border-r border-[#dedbe6] dark:border-[#332a4d] bg-white/50 dark:bg-[#1e1635]/50 backdrop-blur-xl fixed inset-y-0 z-20">
          <div className="p-6">
-            <h1 className="text-xl font-bold font-serif tracking-tight text-[#652bee]">It Had To Be Sew</h1>
+            <h1 className="text-xl font-bold font-display tracking-tight text-[#652bee]">It Had To Be Sew</h1>
          </div>
          <nav className="flex-1 px-4 space-y-2">
             <NavButton 
@@ -170,14 +170,14 @@ export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) =>
                   <div className="bg-[#652bee]/10 p-2 rounded-lg">
                      <span className="material-symbols-outlined text-[#652bee]">{currentView === 'orders' ? 'grid_view' : 'inventory_2'}</span>
                   </div>
-                  <h1 className="text-xl font-bold font-serif tracking-tight capitalize">{currentView}</h1>
+                  <h1 className="text-xl font-bold font-display tracking-tight capitalize">{currentView}</h1>
                </div>
             </div>
          </header>
 
          {/* Desktop Header */}
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
-             <h2 className="text-3xl font-bold font-serif capitalize">{currentView} Dashboard</h2>
+             <h2 className="text-3xl font-bold font-display capitalize">{currentView} Dashboard</h2>
              <div className="flex items-center gap-4">
                 <span className="text-sm font-bold opacity-60">Admin User</span>
                 <div className="size-10 bg-gray-200 rounded-full"></div>

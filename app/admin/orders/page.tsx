@@ -1,14 +1,14 @@
 export const dynamic = 'force-dynamic';
 
 import React, { Suspense } from 'react';
-// 👇 Ensure this matches the named export from the file above
+// 👇 This import now matches the named export above
 import { DashboardShell } from '../../components/DashboardShell'; 
 
 export const metadata = {
   title: 'Admin Dashboard | It Had To Be Sew',
 };
 
-// 👇 RE-INSERTED THIS DATA
+// Mock Data
 const ORDERS = [
   {
     id: '1',
