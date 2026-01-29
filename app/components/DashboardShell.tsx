@@ -154,7 +154,7 @@ const InventoryView = () => (
 );
 
 // --- MAIN DASHBOARD COMPONENT ---
-export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
+export const DashboardShell = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<'orders' | 'inventory'>('orders');

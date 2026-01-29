@@ -1,7 +1,8 @@
+// 👇 Forces the server to rebuild this page on every request
 export const dynamic = 'force-dynamic';
 
 import React, { Suspense } from 'react';
-import { AdminDashboard } from '../../components/AdminDashboard'; 
+import { DashboardShell } from '../../components/DashboardShell'; 
 
 export const metadata = {
   title: 'Admin Dashboard | It Had To Be Sew',
@@ -36,7 +37,7 @@ const ORDERS = [
 export default function Page() {
   return (
     <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Dashboard...</div>}>
-      <AdminDashboard initialOrders={ORDERS} />
+      <DashboardShell initialOrders={ORDERS} />
     </Suspense>
   );
 }
