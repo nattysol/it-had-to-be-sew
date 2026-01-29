@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react'; // 👈 1. Import Suspense
 import { ActiveOrdersDashboard } from '../../components/ActiveOrdersDashboard';
 
 export const metadata = {
@@ -34,10 +34,10 @@ const ORDERS = [
 export default function Page() {
   return (
     <main className="bg-[#f6f6f8] dark:bg-[#151022] min-h-screen pb-24 font-sans text-[#131118] dark:text-white">
-      {/* We pass the data down to the client component. 
-        The server handles the fetch; the client handles the click.
-      */}
-      <ActiveOrdersDashboard initialOrders={ORDERS} />
+      {/* 👇 2. Wrap the component that uses useSearchParams in Suspense */}
+      <Suspense fallback={<div className="p-12 text-center">Loading Dashboard...</div>}>
+        <ActiveOrdersDashboard initialOrders={ORDERS} />
+      </Suspense>
     </main>
   );
 }
