@@ -1,5 +1,6 @@
 import React from 'react';
 
+// This layout must be "clean" because AdminDashboard handles its own Sidebar/Navigation
 export default function AdminLayout({
   children,
 }: {
