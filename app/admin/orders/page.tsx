@@ -1,8 +1,10 @@
-import React, { Suspense } from 'react';
-import { AdminDashboard } from '../../components/AdminDashboard';
+// app/admin/orders/page.tsx
 
-// 👇 THIS LINE FIXES THE VERCEL DEPLOYMENT
+// 👇 1. THIS CONFIG MUST BE HERE (Server Side)
 export const dynamic = 'force-dynamic';
+
+import React, { Suspense } from 'react';
+import { AdminDashboard } from '../../components/AdminDashboard'; 
 
 export const metadata = {
   title: 'Admin Dashboard | It Had To Be Sew',
