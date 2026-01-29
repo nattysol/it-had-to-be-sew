@@ -1,48 +1,43 @@
-import { client } from "../../../sanity/lib/client";
-import OrderDashboard, { Order } from "./OrderDashboard";
+import React from 'react';
+import { ActiveOrdersDashboard } from '../../components/ActiveOrdersDashboard';
 
-// 1. FETCH EVERYTHING (Active + Completed)
-const allOrdersQuery = `
-  *[_type == "order"] | order(orderDate asc) {
-    "id": _id,
-    "clientName": customer.firstName + " " + customer.lastName,
-    "pattern": pattern->title, 
-    "dimensions": dimensions.width + ' " x ' + dimensions.height + ' "',
-    "dueDate": orderDate,
-    status,
-    "totalPrice": totalPrice, 
-    
-    // Captured Data from History
-    "actualTimeSeconds": actualTimeSeconds,
-    "efficiencyMetrics": efficiencyMetrics,
+export const metadata = {
+  title: 'Active Orders | It Had To Be Sew',
+};
 
-    "battingLength": dimensions.height + 8, 
-    "img": pattern->image.asset->url,
-    "materialsAvailable": true,
-    "lowStock": false
+// Mock Data (Replace with Sanity fetch in production)
+const ORDERS = [
+  {
+    id: '1',
+    clientName: 'Sarah Jenkins',
+    pattern: 'Double Wedding Ring Pattern',
+    dimensions: '90" x 108" (King)',
+    dueDate: 'Oct 15, 2023',
+    status: 'Ready to Start',
+    materialsAvailable: true,
+    battingLength: 116,
+    img: 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600&auto=format&fit=crop'
+  },
+  {
+    id: '2',
+    clientName: 'Michael Chen',
+    pattern: 'Modern Log Cabin',
+    dimensions: '60" x 60" (Throw)',
+    dueDate: 'Oct 22, 2023',
+    status: 'In Progress',
+    lowStock: true,
+    battingLength: 68,
+    img: 'https://images.unsplash.com/photo-1524355529124-749e75556214?q=80&w=600&auto=format&fit=crop'
   }
-`;
+];
 
-export default async function OrdersPage() {
-  // 2. GET DATA
-  const orders = await client.fetch<Order[]>(allOrdersQuery, {}, { next: { revalidate: 0 } });
-
-  // 3. SEPARATE INTO TWO LISTS
-  // Active = Ready, Processing, In Progress, New
-  const activeOrders = orders.filter(o => 
-    ['ready', 'processing', 'inProgress', 'new'].includes(o.status.toLowerCase())
-  );
-  
-  // Completed = Completed
-  const completedOrders = orders.filter(o => 
-    o.status.toLowerCase() === 'completed'
-  );
-
-  // 4. PASS BOTH LISTS TO DASHBOARD
+export default function Page() {
   return (
-    <OrderDashboard 
-      activeOrders={activeOrders} 
-      completedOrders={completedOrders} 
-    />
+    <main className="bg-[#f6f6f8] dark:bg-[#151022] min-h-screen pb-24 font-sans text-[#131118] dark:text-white">
+      {/* We pass the data down to the client component. 
+        The server handles the fetch; the client handles the click.
+      */}
+      <ActiveOrdersDashboard initialOrders={ORDERS} />
+    </main>
   );
 }
