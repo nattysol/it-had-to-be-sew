@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-// ✅ We are keeping this. If the page crashes, this file is the suspect.
+// ✅ Keep this import. If it crashes later, we'll know it's the modal.
 import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
 
 // --- TYPES ---
@@ -119,7 +119,6 @@ const InventoryView = () => (
   </div>
 );
 
-// ✅ EXPORT NAME MATCHES PAGE.TSX
 export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -129,7 +128,7 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
   const openOrder = (id: string) => {
-    // ✅ Updated to point to your new working route
+    // ✅ Updated route
     router.push(`/admin/queue?orderId=${id}`, { scroll: false });
   };
   const closeOrder = () => {
@@ -167,11 +166,6 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
             )}
          </div>
       </main>
-
-      {/* MOBILE HEADER FOR SAFETY */}
-      <div className="md:hidden fixed top-0 left-0 right-0 bg-white p-4 border-b z-50">
-          <h1 className="font-bold">It Had To Be Sew</h1>
-      </div>
 
       <ProjectWorkspaceModal order={selectedOrder} isOpen={!!selectedOrder} onClose={closeOrder} />
     </div>

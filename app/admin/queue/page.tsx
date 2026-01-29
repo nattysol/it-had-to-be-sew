@@ -1,14 +1,15 @@
 export const dynamic = 'force-dynamic';
 
 import React, { Suspense } from 'react';
-// ✅ Importing the restored component
+
+// 👇 FIX: You MUST use curly braces { } around AdminDashboard
 import { AdminDashboard } from '../../components/AdminDashboard'; 
 
 export const metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// --- MOCK DATA IS BACK ---
+// --- MOCK DATA ---
 const ORDERS = [
   {
     id: '1',
