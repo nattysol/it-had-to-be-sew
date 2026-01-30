@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-// 👇 Import the Modal Component
 import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
 
 // --- TYPES ---
@@ -14,129 +13,147 @@ export interface Order {
   dimensions: string;
   dueDate: string;
   status: string;
+  
+  // Financials
+  totalPrice?: number;
+  actualFabricUsed?: string; // It came as a string in your JSON "24"
+  actualTimeSeconds?: number;
+
   battingLength: number;
   materialsAvailable?: boolean;
   lowStock?: boolean;
   img: string;
 }
 
-// --- SUB-COMPONENTS ---
-const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: string) => void }) => (
-  <div className="space-y-6 animate-fade-in">
-    <div className="flex items-center justify-between">
-      <h2 className="text-lg font-bold font-serif text-slate-800 dark:text-white">Current Queue</h2>
-      <button className="bg-[#652bee]/10 text-[#652bee] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#652bee]/20 transition-colors">
-        Filter
-      </button>
-    </div>
-    <div className="grid gap-6">
-      {orders.map((order) => (
-        <div 
-          key={order.id}
-          onClick={() => openOrder(order.id)}
-          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-all group relative hover:translate-y-[-2px]"
-        >
-          <div className="p-5 relative z-10">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${
-                  order.status === 'Ready to Start' ? 'bg-[#8DAA91]/15 text-[#8DAA91]' : 'bg-[#708090]/15 text-[#708090]'
-                }`}>
-                  {order.status}
-                </span>
-                <h3 className="text-xl font-bold font-serif leading-tight text-slate-900 dark:text-white group-hover:text-[#652bee] transition-colors">
-                  {order.clientName}
-                </h3>
-              </div>
-              {order.lowStock ? (
-                <div className="bg-[#D97706]/10 text-[#D97706] flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#D97706]/20">
-                  <span className="material-symbols-outlined text-[16px]">error</span>
-                  <span className="text-xs font-semibold">Low Stock</span>
-                </div>
-              ) : (
-                <div className="bg-[#2D5A27]/10 text-[#2D5A27] flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2D5A27]/20">
-                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                  <span className="text-xs font-semibold">Materials OK</span>
-                </div>
-              )}
-            </div>
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3 text-slate-500">
-                <span className="material-symbols-outlined text-lg">content_cut</span>
-                <p className="text-sm">{order.pattern}</p>
-              </div>
-            </div>
-            <button className="w-full bg-[#652bee] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#5423c9] transition-colors shadow-lg shadow-[#652bee]/20">
-              {order.status === 'In Progress' ? 'Resume Work' : 'Open Project'}
-            </button>
-          </div>
-          <div className="h-[150px] w-full relative opacity-90 group-hover:opacity-100 transition-opacity mt-[-20px]">
-             {order.img && <Image src={order.img} alt="Pattern" fill className="object-cover" sizes="(max-width: 600px) 100vw, 600px" />}
-             <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent" />
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+// --- HELPER: Profit Calculator ---
+const getProfitMetrics = (order: Order) => {
+  const revenue = order.totalPrice || 0;
+  
+  // 1. Calculate Costs
+  const laborRate = 25; // $25 per hour
+  const fabricCostPerUnit = 12; // $12 per yard/unit
+  
+  const hours = (order.actualTimeSeconds || 0) / 3600;
+  const fabric = parseFloat(order.actualFabricUsed || "0");
+  
+  const laborCost = hours * laborRate;
+  const materialCost = fabric * fabricCostPerUnit;
+  const totalCost = laborCost + materialCost;
+  
+  const profit = revenue - totalCost;
+  const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(0) : 0;
 
-const InventoryView = () => (
-  <div className="space-y-8 animate-fade-in">
-    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 p-4 rounded-xl flex items-start gap-3">
-      <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">warning</span>
-      <div>
-        <h4 className="font-bold text-orange-900 dark:text-orange-100 text-sm">Low Stock Alert</h4>
-        <p className="text-xs text-orange-800 dark:text-orange-200 mt-1">
-          You only have enough batting for <strong>2 more quilts</strong>.
-        </p>
-      </div>
-    </div>
-    <div className="bg-white dark:bg-[#1e1635] p-6 rounded-2xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445]">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center gap-3">
-          <div className="size-10 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center">
-            <span className="material-symbols-outlined text-slate-500">spool</span>
-          </div>
-          <div>
-            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Glide - Cool Grey</h3>
-            <p className="text-xs text-slate-500 font-mono">Cone #42</p>
-          </div>
-        </div>
-        <button className="text-[#652bee] text-sm font-bold flex items-center gap-1 hover:bg-[#652bee]/5 px-2 py-1 rounded-lg">
-          <span className="material-symbols-outlined text-base">scale</span> Reconcile
-        </button>
-      </div>
-      <div className="flex gap-4 items-end h-32 mb-2">
-         <div className="w-12 h-full bg-slate-100 rounded-lg relative overflow-hidden">
-            <div className="absolute bottom-0 left-0 right-0 bg-[#652bee] h-[40%] transition-all duration-1000"></div>
-         </div>
-         <div className="flex-1 pb-2">
-            <p className="text-3xl font-bold font-display text-slate-900 dark:text-white">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
-            <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Remaining Capacity</p>
-         </div>
-      </div>
-    </div>
-  </div>
-);
+  return { 
+    revenue, 
+    profit: profit.toFixed(2), 
+    margin, 
+    isProfitable: profit > 0 
+  };
+};
 
-// 👇 The Main Export
+// --- SUB-COMPONENT: Orders List ---
+const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], openOrder: (id: string) => void, showCompleted: boolean }) => {
+  
+  // Filter based on the tab selected
+  const displayOrders = orders.filter(o => 
+    showCompleted ? o.status === 'completed' : o.status !== 'completed'
+  );
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="grid gap-6">
+        {displayOrders.length === 0 && (
+          <div className="p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+            {showCompleted ? "No completed jobs yet. Keep sewing!" : "Queue is empty!"}
+          </div>
+        )}
+
+        {displayOrders.map((order) => {
+          const financials = getProfitMetrics(order);
+
+          return (
+            <div 
+              key={order.id}
+              onClick={() => openOrder(order.id)}
+              className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-all group relative hover:translate-y-[-2px]"
+            >
+              <div className="p-5 relative z-10 flex flex-col md:flex-row gap-6">
+                
+                {/* 1. Main Info */}
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${
+                      order.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-[#652bee]/10 text-[#652bee]'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold font-serif leading-tight text-slate-900 dark:text-white group-hover:text-[#652bee] transition-colors">
+                    {order.clientName}
+                  </h3>
+                  <div className="flex items-center gap-2 text-slate-500 mt-1">
+                    <span className="material-symbols-outlined text-base">content_cut</span>
+                    <p className="text-xs font-bold uppercase tracking-wider">{order.pattern}</p>
+                  </div>
+                </div>
+
+                {/* 2. The "Money" Section (Only visible if Completed) */}
+                {showCompleted ? (
+                   <div className="flex items-center gap-4 bg-slate-50 dark:bg-black/20 p-3 rounded-lg border border-slate-100 dark:border-white/5">
+                      <div className="text-right">
+                         <p className="text-[10px] uppercase text-slate-400 font-bold">Revenue</p>
+                         <p className="font-bold text-slate-700 dark:text-white">${financials.revenue}</p>
+                      </div>
+                      <div className="w-px h-8 bg-slate-200 dark:bg-white/10"></div>
+                      <div className="text-right">
+                         <p className="text-[10px] uppercase text-slate-400 font-bold">Net Profit</p>
+                         <p className={`font-bold ${financials.isProfitable ? 'text-green-600' : 'text-red-500'}`}>
+                           ${financials.profit}
+                         </p>
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs font-bold ${financials.isProfitable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                         {financials.margin}%
+                      </div>
+                   </div>
+                ) : (
+                  // If Active, show Materials Status
+                  <div className="flex items-center">
+                      <div className="bg-[#2D5A27]/10 text-[#2D5A27] flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2D5A27]/20">
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                        <span className="text-xs font-semibold">Materials OK</span>
+                      </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Image Background (Subtle) */}
+              <div className="absolute top-0 right-0 w-32 h-full opacity-10 mask-linear-gradient">
+                 {order.img && <Image src={order.img} alt="Pattern" fill className="object-cover" />}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN COMPONENT ---
 export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [currentView, setCurrentView] = useState<'orders' | 'inventory'>('orders');
+  const [currentView, setCurrentView] = useState<'queue' | 'inventory'>('queue');
+  // New State for Toggle
+  const [showCompleted, setShowCompleted] = useState(false);
 
-  // 1. DETECT ACTIVE ORDER
   const activeOrderId = searchParams.get('orderId');
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
-  // 2. NAVIGATE FUNCTIONS
   const openOrder = (id: string) => {
-    // This pushes the URL, which triggers the modal to appear
     router.push(`/admin/queue?orderId=${id}`, { scroll: false });
   };
   
   const closeOrder = () => {
-    // This clears the URL, which closes the modal
     router.push('/admin/queue', { scroll: false });
   };
 
@@ -148,15 +165,50 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
             <h1 className="text-xl font-bold font-serif tracking-tight text-[#652bee]">It Had To Be Sew</h1>
          </div>
          <nav className="flex-1 px-4 space-y-2">
-            <NavButton icon="assignment" label="Active Orders" active={currentView === 'orders'} onClick={() => setCurrentView('orders')} />
-            <NavButton icon="inventory_2" label="Inventory" active={currentView === 'inventory'} onClick={() => setCurrentView('inventory')} />
+            <button 
+              onClick={() => setCurrentView('queue')} 
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${currentView === 'queue' ? 'bg-[#652bee] text-white shadow-lg shadow-[#652bee]/20' : 'text-slate-500 hover:bg-black/5'}`}
+            >
+              <span className="material-symbols-outlined">assignment</span>
+              Orders
+            </button>
+            <button 
+              onClick={() => setCurrentView('inventory')} 
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${currentView === 'inventory' ? 'bg-[#652bee] text-white shadow-lg shadow-[#652bee]/20' : 'text-slate-500 hover:bg-black/5'}`}
+            >
+              <span className="material-symbols-outlined">inventory_2</span>
+              Inventory
+            </button>
          </nav>
       </aside>
 
       {/* CONTENT */}
       <main className="flex-1 md:ml-64 pb-32 md:pb-10">
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
-             <h2 className="text-3xl font-bold font-display capitalize text-slate-900 dark:text-white">{currentView} Dashboard</h2>
+             <div className="flex items-center gap-4">
+               <h2 className="text-3xl font-bold font-display capitalize text-slate-900 dark:text-white">
+                 {currentView === 'inventory' ? 'Inventory' : (showCompleted ? 'Financial History' : 'Active Queue')}
+               </h2>
+               
+               {/* TOGGLE SWITCH for Orders */}
+               {currentView === 'queue' && (
+                 <div className="flex bg-slate-200 dark:bg-white/10 p-1 rounded-lg">
+                    <button 
+                      onClick={() => setShowCompleted(false)}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!showCompleted ? 'bg-white shadow-sm text-black' : 'text-slate-500'}`}
+                    >
+                      Active
+                    </button>
+                    <button 
+                      onClick={() => setShowCompleted(true)}
+                      className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${showCompleted ? 'bg-white shadow-sm text-black' : 'text-slate-500'}`}
+                    >
+                      Completed
+                    </button>
+                 </div>
+               )}
+             </div>
+
              <div className="flex items-center gap-4">
                 <span className="text-sm font-bold opacity-60">Admin User</span>
                 <div className="size-10 bg-gray-200 rounded-full"></div>
@@ -164,33 +216,15 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
          </header>
 
          <div className="p-4 md:p-8 max-w-4xl mx-auto">
-            {currentView === 'orders' ? (
-               <OrdersView orders={initialOrders} openOrder={openOrder} />
+            {currentView === 'queue' ? (
+               <OrdersView orders={initialOrders} openOrder={openOrder} showCompleted={showCompleted} />
             ) : (
-               <InventoryView />
+               <div className="text-center p-12 text-slate-400">Inventory Module Coming Soon</div>
             )}
          </div>
       </main>
-      
-      {/* MOBILE SAFETY NAV */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden z-30">
-          <button onClick={() => setCurrentView('orders')} className="p-2 font-bold text-sm">Orders</button>
-          <button onClick={() => setCurrentView('inventory')} className="p-2 font-bold text-sm">Stock</button>
-      </nav>
 
-      {/* 👇 3. THE MODAL IS FINALLY HERE */}
-      <ProjectWorkspaceModal 
-        order={selectedOrder} 
-        isOpen={!!selectedOrder} 
-        onClose={closeOrder} 
-      />
+      <ProjectWorkspaceModal order={selectedOrder} isOpen={!!selectedOrder} onClose={closeOrder} />
     </div>
   );
 };
-
-const NavButton = ({ icon, label, active, onClick }: { icon: string, label: string, active: boolean, onClick: () => void }) => (
-  <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${active ? 'bg-[#652bee] text-white shadow-lg shadow-[#652bee]/20' : 'text-slate-500 hover:bg-black/5'}`}>
-    <span className="material-symbols-outlined">{icon}</span>
-    {label}
-  </button>
-);
