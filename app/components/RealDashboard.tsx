@@ -4,13 +4,13 @@ import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
-import { updateInventoryStock, createInventoryItem } from '../actions'; // 👈 Added createInventoryItem
+import { updateInventoryStock, createInventoryItem } from '../actions'; 
 
 // --- TYPES ---
 export interface Order {
   id: string;
   clientName: string;
-  // 👇 NEW: Customer Details Object
+  // Customer info for the completed view report
   customer?: {
     email: string;
     phone: string;
@@ -38,6 +38,8 @@ export interface InventoryItem {
   category: string;
   quantity: number;
   unit: string;
+  totalLength?: number; // Physics
+  totalWeight?: number; // Physics
   isLowStock: boolean;
   imageUrl?: string;
 }
@@ -45,79 +47,147 @@ export interface InventoryItem {
 // --- HELPER: Profit Calculator ---
 const getProfitMetrics = (order: Order) => {
   const revenue = order.totalPrice || 0;
-  const laborRate = 25; 
-  const fabricCostPerUnit = 12; 
+  // Configurable rates (You can move these to Sanity later)
+  const laborRate = 25; // $25/hr
+  const fabricCostPerUnit = 12; // $12/yd
+  
   const hours = (order.actualTimeSeconds || 0) / 3600;
   const fabric = parseFloat(order.actualFabricUsed || "0");
+  
   const laborCost = hours * laborRate;
   const materialCost = fabric * fabricCostPerUnit;
   const totalCost = laborCost + materialCost;
+  
   const profit = revenue - totalCost;
   const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(0) : 0;
-  return { revenue, profit: profit.toFixed(2), margin, isProfitable: profit > 0 };
+  
+  return { 
+    revenue, 
+    profit: profit.toFixed(2), 
+    margin, 
+    isProfitable: profit > 0 
+  };
 };
 
 // --- SUB-COMPONENT: Add Inventory Modal ---
 const AddInventoryModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const [isPending, startTransition] = useTransition();
-  const [formData, setFormData] = useState({ name: '', category: 'thread', quantity: 1, unit: 'units' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    category: 'thread', 
+    quantity: 1, 
+    unit: 'units',
+    length: '', 
+    weight: ''  
+  });
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
-      await createInventoryItem(formData.name, formData.category, Number(formData.quantity), formData.unit);
+      await createInventoryItem(formData);
       onClose();
-      setFormData({ name: '', category: 'thread', quantity: 1, unit: 'units' }); // Reset
+      // Reset Form
+      setFormData({ name: '', category: 'thread', quantity: 1, unit: 'units', length: '', weight: '' });
     });
   };
 
+  // UX Fix: Inputs use 'text-base' (16px) on mobile to prevent iOS auto-zoom
+  const inputBaseClass = "w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-[#131118] dark:text-white outline-none focus:ring-2 focus:ring-[#652bee] text-base md:text-sm";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white dark:bg-[#1e1635] w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in zoom-in-95">
-         <h3 className="font-bold text-lg mb-4 text-[#131118] dark:text-white">Add Inventory Item</h3>
+      <div className="bg-white dark:bg-[#1e1635] w-full max-w-md rounded-2xl p-6 shadow-2xl animate-in zoom-in-95">
+         <div className="flex justify-between items-center mb-4">
+             <h3 className="font-bold text-lg text-[#131118] dark:text-white">Add Inventory Item</h3>
+             <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><span className="material-symbols-outlined">close</span></button>
+         </div>
+         
          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Basic Info */}
             <div>
-               <label className="text-xs font-bold text-slate-400 uppercase">Item Name</label>
+               <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Product Name</label>
                <input 
                  required
                  autoFocus
-                 className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-[#131118] dark:text-white outline-none focus:ring-2 focus:ring-[#652bee]"
-                 placeholder="e.g. White Thread"
+                 className={inputBaseClass}
+                 placeholder="e.g. Glide - Red Pepper"
                  value={formData.name}
                  onChange={e => setFormData({...formData, name: e.target.value})}
                />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
                <div>
-                 <label className="text-xs font-bold text-slate-400 uppercase">Category</label>
+                 <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Category</label>
                  <select 
-                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-[#131118] dark:text-white outline-none"
+                    className={inputBaseClass}
                     value={formData.category}
                     onChange={e => setFormData({...formData, category: e.target.value})}
                  >
                     <option value="thread">Thread</option>
                     <option value="batting">Batting</option>
+                    <option value="backing">Backing</option>
                     <option value="notion">Notion</option>
                  </select>
                </div>
                <div>
-                 <label className="text-xs font-bold text-slate-400 uppercase">Quantity</label>
+                 <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Stock Count</label>
                  <input 
                    type="number"
-                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-[#131118] dark:text-white outline-none focus:ring-2 focus:ring-[#652bee]"
+                   className={inputBaseClass}
+                   placeholder="e.g. 5"
                    value={formData.quantity}
                    onChange={e => setFormData({...formData, quantity: Number(e.target.value)})}
                  />
                </div>
             </div>
-            <div className="flex gap-3 pt-2">
-               <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5">Cancel</button>
-               <button disabled={isPending} className="flex-1 bg-[#652bee] text-white py-3 rounded-xl font-bold shadow-lg hover:bg-[#5423c9] disabled:opacity-50">
-                 {isPending ? 'Saving...' : 'Add Item'}
-               </button>
+
+            {/* Physics Section (For MRP Calculations) */}
+            <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5 space-y-3">
+                <p className="text-xs font-bold text-[#652bee] uppercase tracking-wide flex items-center gap-1">
+                   <span className="material-symbols-outlined text-sm">scale</span> Usage Data (Per Unit)
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Full Length</label>
+                        <div className="flex items-center gap-2">
+                           <input 
+                             type="number"
+                             className={`${inputBaseClass} py-2`}
+                             placeholder="5000"
+                             value={formData.length}
+                             onChange={e => setFormData({...formData, length: e.target.value})}
+                           />
+                           <span className="text-xs font-bold text-slate-400">yds</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Full Weight</label>
+                        <div className="flex items-center gap-2">
+                           <input 
+                             type="number"
+                             className={`${inputBaseClass} py-2`}
+                             placeholder="100"
+                             value={formData.weight}
+                             onChange={e => setFormData({...formData, weight: e.target.value})}
+                           />
+                           <span className="text-xs font-bold text-slate-400">g</span>
+                        </div>
+                    </div>
+                </div>
+                <p className="text-[10px] text-slate-400 italic leading-tight">
+                    Used to auto-calculate remaining stock when you finish a project.
+                </p>
             </div>
+
+            <button 
+              disabled={isPending} 
+              className="w-full bg-[#652bee] text-white py-4 rounded-xl font-bold shadow-lg hover:bg-[#5423c9] disabled:opacity-50 transition-colors"
+            >
+              {isPending ? 'Saving to Inventory...' : 'Add Item'}
+            </button>
          </form>
       </div>
     </div>
@@ -132,11 +202,11 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
       <div className="grid gap-6">
         {displayOrders.length === 0 && (
           <div className="p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-            {showCompleted ? "No completed jobs yet." : "Queue is empty!"}
+            {showCompleted ? "No completed jobs history." : "Active queue is empty!"}
           </div>
         )}
 
@@ -206,7 +276,7 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
 // --- SUB-COMPONENT: Inventory List ---
 const InventoryView = ({ items }: { items: InventoryItem[] }) => {
   const [isPending, startTransition] = useTransition();
-  const [isAddOpen, setIsAddOpen] = useState(false); // 👈 Local state for modal
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const handleAdjustStock = (id: string, currentQty: number, change: number) => {
     startTransition(async () => {
@@ -235,12 +305,14 @@ const InventoryView = ({ items }: { items: InventoryItem[] }) => {
 
       {/* GRID */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* ADD ITEM BUTTON (Now Functional) */}
+        {/* ADD ITEM BUTTON */}
         <button 
            onClick={() => setIsAddOpen(true)}
-           className="border-2 border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-white/5 rounded-2xl flex flex-col items-center justify-center p-6 text-slate-500 hover:border-[#652bee] hover:text-[#652bee] hover:bg-[#652bee]/5 transition-all min-h-[140px] active:scale-95"
+           className="border-2 border-dashed border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-white/5 rounded-2xl flex flex-col items-center justify-center p-6 text-slate-500 hover:border-[#652bee] hover:text-[#652bee] hover:bg-[#652bee]/5 transition-all min-h-[140px] active:scale-95 group"
         >
-           <span className="material-symbols-outlined text-3xl mb-2">add_circle</span>
+           <div className="size-10 rounded-full bg-slate-200 group-hover:bg-[#652bee]/20 flex items-center justify-center mb-2 transition-colors">
+              <span className="material-symbols-outlined text-[#131118] group-hover:text-[#652bee]">add</span>
+           </div>
            <span className="font-bold text-sm">Add New Item</span>
         </button>
 
@@ -266,8 +338,9 @@ const InventoryView = ({ items }: { items: InventoryItem[] }) => {
 
             <div className="flex gap-4 items-end relative z-10">
                <div className="flex-1">
+                  {/* Shows decimal only if not a whole number */}
                   <p className={`text-2xl font-bold font-display ${item.isLowStock ? 'text-orange-500' : 'text-slate-900 dark:text-white'}`}>
-                    {item.quantity} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
+                    {item.quantity % 1 === 0 ? item.quantity : item.quantity.toFixed(2)} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
                   </p>
                </div>
                
@@ -331,11 +404,11 @@ export const AdminDashboard = ({
          {currentView === 'queue' ? (
            <div className="flex bg-slate-100 dark:bg-white/10 p-1 rounded-xl">
               <button onClick={() => setShowCompleted(false)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${!showCompleted ? 'bg-white shadow-sm text-black' : 'text-slate-500'}`}>Active Queue</button>
-              <button onClick={() => setShowCompleted(true)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${showCompleted ? 'bg-white shadow-sm text-black' : 'text-slate-500'}`}>Completed History</button>
+              <button onClick={() => setShowCompleted(true)} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${showCompleted ? 'bg-white shadow-sm text-black' : 'text-slate-500'}`}>History</button>
            </div>
          ) : (
            <div className="flex justify-between items-center">
-             <h2 className="font-bold text-lg">Inventory Manager</h2>
+             <h2 className="font-bold text-lg">Inventory</h2>
              <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">{initialInventory?.length || 0} items</span>
            </div>
          )}
@@ -366,7 +439,7 @@ export const AdminDashboard = ({
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
              <div className="flex items-center gap-4">
                <h2 className="text-3xl font-bold font-display capitalize text-slate-900 dark:text-white">
-                 {currentView === 'inventory' ? 'Inventory' : (showCompleted ? 'Financial History' : 'Active Queue')}
+                 {currentView === 'inventory' ? 'Inventory Manager' : (showCompleted ? 'Financial History' : 'Active Queue')}
                </h2>
                {currentView === 'queue' && (
                  <div className="flex bg-slate-200 dark:bg-white/10 p-1 rounded-lg">

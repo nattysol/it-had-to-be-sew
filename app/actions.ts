@@ -3,85 +3,90 @@
 import { createClient } from "next-sanity";
 import { revalidatePath } from "next/cache";
 
-// 1. Create a specific client just for WRITING (uses the secret token)
+// --- CLIENT SETUP ---
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",
-  token: process.env.SANITY_API_TOKEN, // 👈 The key you just added
+  dataset: "production",
+  token: process.env.SANITY_API_TOKEN,
   apiVersion: "2024-01-01",
   useCdn: false,
 });
 
-// 2. The Function called when you click "Start Quilting"
-export async function updateOrderStatus(orderId: string, newStatus: string) {
+// --- 1. AI PATTERN MATCHER ---
+export async function getAIPatternSuggestions(userQuery: string, availablePatterns: any[]) {
   try {
-    console.log(`Updating Order ${orderId} to ${newStatus}...`);
-
-    // Sanity specific command: PATCH the document
-    await writeClient
-      .patch(orderId)
-      .set({ status: newStatus }) // Update the status field
-      .commit(); // Save it to the database
-
-    console.log("Success!");
-
-    // 3. Tell Next.js to refresh the dashboard so you see the change instantly
-    revalidatePath("/admin/queue");
+    console.log(`[AI Search] User asked for: "${userQuery}"`);
     
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to update order:", error);
-    return { success: false, error };
-  }
-}
-// ... (keep existing updateOrderStatus)
-
-// 👇 NEW: Save the timer data
-export async function updateOrderTime(orderId: string, seconds: number) {
-  try {
-    await writeClient
-      .patch(orderId)
-      .set({ actualTimeSeconds: seconds })
-      .commit();
+    // Check if Key Exists
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn("⚠️ [AI Search] No API Key found! Falling back to simple text search.");
       
-    revalidatePath("/admin/queue");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to save time:", error);
-    return { success: false, error };
-  }
-}
-// ... existing imports
-
-// 👇 NEW: Update Inventory Quantity
-export async function updateInventoryStock(id: string, newQuantity: number) {
-  try {
-    await writeClient
-      .patch(id)
-      .set({ quantity: newQuantity })
-      .commit();
+      const lowerQuery = userQuery.toLowerCase();
+      const filtered = availablePatterns.filter(p => 
+        p.title.toLowerCase().includes(lowerQuery) || 
+        (p.category && p.category.toLowerCase().includes(lowerQuery))
+      );
       
-    revalidatePath("/admin/queue");
-    return { success: true };
+      return { success: true, matches: filtered.map(p => p._id) };
+    }
+
+    console.log("✅ [AI Search] API Key found. Asking OpenAI...");
+
+    // Prepare data for AI (Small payload to save cost/time)
+    const patternListLite = availablePatterns.map(p => ({ 
+      id: p._id, 
+      title: p.title, 
+      category: p.category 
+    }));
+    
+    const prompt = `
+      You are a helpful quilting assistant.
+      User Query: "${userQuery}"
+      
+      Match this query to the following patterns based on vibe, theme, and title:
+      ${JSON.stringify(patternListLite)}
+      
+      Return ONLY a JSON array of the best 3-5 matching IDs. 
+      Example: ["id_1", "id_2"]
+    `;
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+        throw new Error("OpenAI API Failed");
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    const suggestedIds = JSON.parse(content);
+    
+    return { success: true, matches: suggestedIds };
+
   } catch (error) {
-    console.error("Failed to update stock:", error);
+    console.error("❌ [AI Search] Failed:", error);
     return { success: false, error };
   }
 }
-// ... existing imports ...
-// (Make sure you have these imported at the top: createClient, revalidatePath)
 
-// 👇 NEW: Create a new order from the Wizard
+// --- 2. CREATE ORDER ---
 export async function createOrder(orderData: any) {
   try {
-    console.log("Creating order...", orderData);
-
     const doc = {
       _type: 'order',
       status: 'pending',
       orderDate: new Date().toISOString(),
       
-      // Customer Info
       customer: {
         firstName: orderData.customer.firstName,
         lastName: orderData.customer.lastName,
@@ -93,34 +98,28 @@ export async function createOrder(orderData: any) {
         zip: orderData.customer.zip,
       },
 
-      // Dimensions
       dimensions: {
         width: Number(orderData.dimensions.width),
         height: Number(orderData.dimensions.height),
       },
 
-      // Pattern (If selected)
       pattern: orderData.selectedPattern ? {
         _type: 'reference',
         _ref: orderData.selectedPattern._id
       } : undefined,
 
-      // Design Details
       designDetails: {
         threadColor: orderData.designDetails.threadColor,
         isDirectional: orderData.designDetails.isDirectional,
       },
 
-      // Materials
       backing: {
         width: Number(orderData.backing.width),
         height: Number(orderData.backing.height),
       },
       
-      // We store the selected batting info as text for now
       battingDescription: orderData.selectedBatting?.name,
 
-      // Finishing
       trimming: {
         wanted: orderData.trimming.wanted,
         method: orderData.trimming.method,
@@ -132,36 +131,48 @@ export async function createOrder(orderData: any) {
         stripWidth: orderData.binding.stripWidth
       },
 
-      // Consent
       consent: {
         socialMedia: orderData.consent.socialMedia
       },
       
-      // Estimated Price (Saved for reference)
       estimatedTotal: orderData.estimatedTotal
     };
 
-    const result = await writeClient.create(doc);
-    
-    // Refresh the admin dashboard so the new order appears immediately
+    await writeClient.create(doc);
     revalidatePath("/admin/queue");
-    
-    return { success: true, id: result._id };
+    return { success: true };
   } catch (error) {
     console.error("Failed to create order:", error);
     return { success: false, error: String(error) };
   }
 }
-// 👇 NEW: Create Inventory Item
-export async function createInventoryItem(name: string, category: string, quantity: number, unit: string) {
+
+// --- 3. INVENTORY ACTIONS ---
+
+// A. Simple Stock Adjustment (+/- buttons)
+export async function updateInventoryStock(id: string, newQuantity: number) {
+  try {
+    await writeClient.patch(id).set({ quantity: newQuantity }).commit();
+    revalidatePath("/admin/queue");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update stock:", error);
+    return { success: false, error };
+  }
+}
+
+// B. Create New Item (With Weights/Lengths)
+export async function createInventoryItem(data: any) {
   try {
     await writeClient.create({
       _type: 'inventory',
-      name,
-      category,
-      quantity,
-      unit,
-      lowStockThreshold: 5 // Default threshold
+      name: data.name,
+      category: data.category,
+      quantity: Number(data.quantity),
+      unit: data.unit || 'units',
+      totalLength: Number(data.length),
+      totalWeight: Number(data.weight),
+      lowStockThreshold: 1
     });
     
     revalidatePath("/admin/queue");
@@ -171,66 +182,53 @@ export async function createInventoryItem(name: string, category: string, quanti
     return { success: false, error };
   }
 }
-// ... existing imports
 
-// 👇 NEW: Real AI Pattern Matcher
-export async function getAIPatternSuggestions(userQuery: string, availablePatterns: any[]) {
+// C. Deduct Material Logic (MRP)
+export async function deductMaterialUsage(inventoryId: string, weightUsed: number) {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      console.error("No OpenAI API Key found");
-      // Fallback to simple filtering if no key is present (so app doesn't crash)
-      const lowerQuery = userQuery.toLowerCase();
-      const filtered = availablePatterns.filter(p => 
-        p.title.toLowerCase().includes(lowerQuery) || 
-        p.category?.toLowerCase().includes(lowerQuery)
-      );
-      return { success: true, matches: filtered.map(p => p._id) };
+    // 1. Get the item to know its ratio
+    const item = await writeClient.fetch(`*[_type == "inventory" && _id == $id][0]`, { id: inventoryId });
+    
+    if (!item || !item.totalWeight) {
+      // If we don't have physics data, we can't do math. Just return success (skip).
+      console.warn("Skipping deduction: Item has no weight data");
+      return { success: true, skipped: true };
     }
 
-    // 1. Construct the Prompt for the AI
-    // We send a lightweight version of the patterns to save tokens
-    const patternListLite = availablePatterns.map(p => ({ id: p._id, title: p.title, category: p.category }));
+    // 2. Calculate usage ratio
+    // Fraction Used = Used Weight / Total Spool Weight
+    const fractionUsed = weightUsed / item.totalWeight;
     
-    const prompt = `
-      You are an expert longarm quilter. 
-      I have a user looking for a quilt pattern. 
-      
-      User Request: "${userQuery}"
-      
-      Here are my available patterns:
-      ${JSON.stringify(patternListLite)}
-      
-      Task: Select the top 4 patterns that best match the user's request, mood, or theme.
-      (e.g. if they say "Valentines", look for hearts, love, swirls, or romantic names).
-      
-      Return ONLY a JSON array of the matching IDs, like this: ["id1", "id2"].
-      Do not add any markdown formatting or explanation.
-    `;
+    // 3. Update Stock
+    const newQuantity = Math.max(0, item.quantity - fractionUsed);
 
-    // 2. Call OpenAI API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo", // or "gpt-4o" for smarter results
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7
-      })
-    });
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
-
-    // 3. Parse the result
-    const suggestedIds = JSON.parse(content);
+    await writeClient.patch(inventoryId).set({ quantity: newQuantity }).commit();
     
-    return { success: true, matches: suggestedIds };
-
+    revalidatePath("/admin/queue");
+    return { success: true, fractionUsed };
   } catch (error) {
-    console.error("AI Match Failed:", error);
+    console.error("Deduction failed:", error);
+    return { success: false, error };
+  }
+}
+
+// --- 4. ORDER STATUS & TIME TRACKING ---
+export async function updateOrderStatus(orderId: string, newStatus: string) {
+  try {
+    await writeClient.patch(orderId).set({ status: newStatus }).commit();
+    revalidatePath("/admin/queue");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
+  }
+}
+
+export async function updateOrderTime(orderId: string, seconds: number) {
+  try {
+    await writeClient.patch(orderId).set({ actualTimeSeconds: seconds }).commit();
+    revalidatePath("/admin/queue");
+    return { success: true };
+  } catch (error) {
     return { success: false, error };
   }
 }
