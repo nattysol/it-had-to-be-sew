@@ -66,7 +66,7 @@ export default function Home() {
           </div>
           <div className="flex-1 relative w-full">
             <div className="relative z-10 w-full aspect-[4/3] md:aspect-square rounded-2xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700 group border-4 border-white">
-               <Image src="https://images.unsplash.com/photo-1574635671569-42b4737d2f9d?q=80&w=1200" alt="Quilting" fill className="object-cover transform group-hover:scale-105 transition-transform duration-700" priority />
+               <Image src="hero.webp" alt="Quilting" fill className="object-cover transform group-hover:scale-105 transition-transform duration-700" priority />
                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
             </div>
           </div>
