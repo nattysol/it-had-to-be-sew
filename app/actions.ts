@@ -3,44 +3,34 @@
 import { createClient } from "next-sanity";
 import { revalidatePath } from "next/cache";
 
-// 1. Create a Secure Client with Write Access
+// 1. Create a specific client just for WRITING (uses the secret token)
 const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || "production",
-  token: process.env.SANITY_API_TOKEN, // 👈 This requires the API Token in your .env file
+  token: process.env.SANITY_API_TOKEN, // 👈 The key you just added
   apiVersion: "2024-01-01",
   useCdn: false,
 });
 
-// 2. The Function to Complete the Order
-export async function completeOrder(orderId: string, stats: { 
-  finalTimeSeconds: number, 
-  actualFabricUsed: string, 
-  battingScrap: string,
-  efficiencySpeed: number
-}) {
+// 2. The Function called when you click "Start Quilting"
+export async function updateOrderStatus(orderId: string, newStatus: string) {
   try {
-    // Send update to Sanity
+    console.log(`Updating Order ${orderId} to ${newStatus}...`);
+
+    // Sanity specific command: PATCH the document
     await writeClient
       .patch(orderId)
-      .set({
-        status: "completed",
-        // Save the actual stats
-        actualTimeSeconds: stats.finalTimeSeconds,
-        actualFabricUsed: stats.actualFabricUsed,
-        efficiencyMetrics: {
-          speed: stats.efficiencySpeed,
-          scrap: stats.battingScrap
-        },
-        completedAt: new Date().toISOString()
-      })
-      .commit();
+      .set({ status: newStatus }) // Update the status field
+      .commit(); // Save it to the database
 
-    // Refresh the dashboard so the order moves to "History" instantly
-    revalidatePath("/admin/orders");
+    console.log("Success!");
+
+    // 3. Tell Next.js to refresh the dashboard so you see the change instantly
+    revalidatePath("/admin/queue");
+    
     return { success: true };
   } catch (error) {
-    console.error("Sanity Update Failed:", error);
+    console.error("Failed to update order:", error);
     return { success: false, error };
   }
 }
