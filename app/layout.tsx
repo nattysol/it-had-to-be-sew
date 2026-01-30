@@ -1,17 +1,9 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google"; // ✅ Use standard Google Font
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+// Load the font
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "It Had To Be Sew",
@@ -26,12 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* 👇 THIS IS THE MISSING LINE THAT FIXES YOUR ICONS */}
+        {/* ✅ This is the line that fixes your wonky icons */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={inter.className}>
         {children}
       </body>
     </html>
