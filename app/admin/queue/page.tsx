@@ -9,15 +9,31 @@ export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 1. UPDATED QUERY: Safely handles References and different field names
+// 👇 UPDATED: We now check 5+ different possibilities for the name and pattern
 const QUERY = `*[_type == "order"] | order(dueDate asc) {
   _id,
   
-  // Handle Client Name (Try 'clientName' text, OR follow 'client' reference to its name)
-  "clientName": coalesce(clientName, client->name, "Unknown Client"),
+  // 1. Try finding the name in these fields (in order)
+  "clientName": coalesce(
+    clientName,       // Text string
+    name,             // Maybe the order itself is named "Danica"?
+    customer,         // Text string
+    customerName,     // Text string
+    client->name,     // Reference to a client doc
+    client->firstName,// Reference to a client doc
+    customer->name,   // Reference to a customer doc
+    "Unknown Client"  // Fallback
+  ),
 
-  // Handle Pattern (Try 'pattern' text, OR follow 'pattern' reference to its title/name)
-  "pattern": coalesce(pattern, pattern->title, pattern->name, "Custom Pattern"),
+  // 2. Try finding the pattern
+  "pattern": coalesce(
+    pattern, 
+    patternName,
+    title,
+    pattern->name, 
+    pattern->title, 
+    "Custom Pattern"
+  ),
 
   dimensions,
   dueDate,
@@ -26,7 +42,6 @@ const QUERY = `*[_type == "order"] | order(dueDate asc) {
   materialsAvailable,
   lowStock,
   
-  // Handle Images (Check both 'image' and 'img' field names)
   "img": coalesce(image.asset->url, img.asset->url)
 }`;
 
@@ -34,12 +49,11 @@ async function getOrders(): Promise<Order[]> {
   try {
     const data = await client.fetch(QUERY);
     
-    // 2. SAFETY MAPPING: Ensure no objects slip through to React
     return data.map((item: any) => ({
       id: item._id,
-      // Force these to be strings to prevent Error #31
-      clientName: typeof item.clientName === 'object' ? 'Linked Client' : (item.clientName || 'Unknown'),
-      pattern: typeof item.pattern === 'object' ? 'Linked Pattern' : (item.pattern || 'Custom'),
+      // Safety check: Ensure we print a string, not an object
+      clientName: typeof item.clientName === 'object' ? 'Complex Object (Check Schema)' : item.clientName,
+      pattern: typeof item.pattern === 'object' ? 'Complex Object (Check Schema)' : item.pattern,
       
       dimensions: item.dimensions || 'N/A',
       dueDate: item.dueDate || new Date().toISOString(),
@@ -47,7 +61,6 @@ async function getOrders(): Promise<Order[]> {
       battingLength: item.battingLength || 0,
       materialsAvailable: item.materialsAvailable || false,
       lowStock: item.lowStock || false,
-      // Fallback image if Sanity image is missing
       img: item.img || 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600'
     }));
   } catch (error) {
