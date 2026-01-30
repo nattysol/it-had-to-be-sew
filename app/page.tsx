@@ -1,171 +1,168 @@
-'use client'
-
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion, Variants } from 'framer-motion'
-import heroImage from './assets/home-hero.webp'
-// Note: Ensure PublicNavbar is created at this path
-import { PublicNavbar } from '../app/components/PublicNavbar' 
+import React from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
-  const pathname = usePathname()
-  
-  // Animation Variants (Kept exactly as approved)
-  const container: Variants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-    }
-  }
-
-  const item: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 40 } }
-  }
-
-  const imageReveal: Variants = {
-    hidden: { scale: 0.95, opacity: 0 },
-    show: { scale: 1, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } }
-  }
-
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-32 bg-[#f6f6f8] dark:bg-[#161220] font-display text-[#0e1b12] dark:text-white transition-colors duration-300">
+    <div className="min-h-screen bg-[#f8f7fa] text-[#131118] font-sans">
       
-      {/* --- HEADER REPLACED WITH COMPONENT --- */}
-      {/* This replaces the old sticky header block */}
-      <PublicNavbar />
-
-      <motion.main variants={container} initial="hidden" animate="show" className="px-6 flex flex-col gap-8 pt-4 max-w-7xl mx-auto w-full">
-
-        {/* --- HERO SECTION --- */}
-        <section className="flex flex-col md:flex-row gap-8 items-center md:py-12">
-          <div className="space-y-4 flex-1">
-            <motion.h1 variants={item} className="font-display font-extrabold text-[42px] md:text-6xl leading-[1.0] tracking-tight">
-              Precision Quilting.<br/>
-              <span className="text-[#9d7de8] italic font-serif font-normal text-5xl md:text-7xl">Human Touch.</span>
-            </motion.h1>
-            <motion.p variants={item} className="text-lg leading-relaxed text-[#4f6b57] dark:text-[#a0b8a7] max-w-[320px] font-serif">
-              Elevate your handiwork with professional long-arm finishes.
-            </motion.p>
+      {/* 1. NAVBAR */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#652bee] text-3xl">local_florist</span>
+            <span className="font-serif text-xl font-bold tracking-tight">It Had To Be Sew</span>
           </div>
+          <div className="hidden md:flex gap-8 text-sm font-bold text-slate-500">
+            <Link href="/" className="text-[#652bee]">Home</Link>
+            <Link href="#services" className="hover:text-slate-900 transition-colors">Services</Link>
+            <Link href="#gallery" className="hover:text-slate-900 transition-colors">Gallery</Link>
+            <Link href="/admin/queue" className="hover:text-slate-900 transition-colors">Admin Login</Link>
+          </div>
+          <button className="bg-[#131118] text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-[#652bee] transition-colors shadow-lg">
+            Book a Quilt
+          </button>
+        </div>
+      </nav>
+
+      {/* 2. HERO SECTION */}
+      <header className="relative pt-20 pb-32 px-6 overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
           
-          {/* Hero Image */}
-          <motion.div variants={imageReveal} className="relative w-full flex-1 max-w-md">
-            <div className="relative w-full aspect-square bg-gray-200 rounded-[32px] shadow-2xl shadow-[#9d7de8]/10 overflow-hidden">
-               {/* Ensure you have the asset or change src */}
-               <img 
-                 src={heroImage.src} 
-                 alt="Quilt Texture" 
-                 className="object-cover w-full h-full hover:scale-105 transition-transform duration-700"
-               />
-               <div className="absolute inset-0 ring-1 ring-inset ring-black/5 dark:ring-white/10 rounded-[32px]"></div>
+          {/* Text Content */}
+          <div className="flex-1 z-10">
+            <div className="inline-flex items-center gap-2 bg-purple-50 text-[#652bee] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+              <span className="material-symbols-outlined text-sm">verified</span>
+              Now Accepting New Clients
             </div>
-            {/* Floating Badge */}
-            <motion.div 
-              initial={{ scale: 0, rotate: -45 }}
-              animate={{ scale: 1, rotate: -12 }}
-              transition={{ delay: 0.5, type: "spring" }}
-              className="absolute -bottom-4 -left-2 w-24 h-24 bg-white/30 dark:bg-black/30 backdrop-blur-md rounded-2xl border border-white/40 flex items-center justify-center shadow-lg"
-            >
-              <span className="material-symbols-outlined text-4xl text-[#9d7de8]">texture</span>
-            </motion.div>
-          </motion.div>
-        </section>
-
-        {/* --- SERVICES TEASER --- */}
-        <section className="py-8">
-          <motion.div variants={item} className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold tracking-tight">Services</h2>
-            <Link href="/services" className="text-[#9d7de8] text-sm font-bold flex items-center gap-1 hover:underline">
-              View All <span className="material-symbols-outlined text-sm">north_east</span>
-            </Link>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <motion.div variants={item} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="group relative flex flex-col gap-4 p-5 bg-white dark:bg-[#1a2e20] rounded-[32px] border border-black/5 dark:border-white/5 shadow-sm">
-              <div className="w-full aspect-[16/9] bg-gray-200 rounded-2xl overflow-hidden">
-                  <img src={heroImage.src} className="w-full h-full object-cover"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <h3 className="font-bold text-lg">Custom Quilting</h3>
-                  <p className="text-[#4f6b57] dark:text-[#a0b8a7] text-sm font-serif italic">Intricate, one-of-a-kind stitch patterns</p>
-                </div>
-                <span className="material-symbols-outlined text-[#9d7de8] bg-[#9d7de8]/10 p-3 rounded-full">auto_awesome</span>
-              </div>
-            </motion.div>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold leading-[1.1] mb-6 text-slate-900">
+              Modern quilting for <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#652bee] to-pink-500">
+                timeless memories.
+              </span>
+            </h1>
+            <p className="text-lg text-slate-500 mb-8 max-w-lg leading-relaxed">
+              We turn your quilt tops into finished masterpieces. Professional longarm quilting, binding, and finishing services in Las Vegas.
+            </p>
+            <div className="flex gap-4">
+              <button className="bg-[#652bee] text-white px-8 py-4 rounded-xl font-bold shadow-xl shadow-[#652bee]/20 hover:bg-[#5423c9] transition-transform hover:-translate-y-1">
+                Start Your Project
+              </button>
+              <button className="bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-colors">
+                View Pricing
+              </button>
+            </div>
           </div>
-        </section>
 
-        {/* --- WORKFLOW --- */}
-        <section className="py-4 pb-12">
-          <motion.h2 variants={item} className="text-2xl font-bold tracking-tight mb-8">The Workflow</motion.h2>
-          <div className="space-y-10 relative pl-2">
-            <div className="absolute left-[1.15rem] top-2 bottom-4 w-[1px] bg-[#4f6b57]/20"></div>
+          {/* Hero Image */}
+          <div className="flex-1 relative">
+            <div className="relative z-10 w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl rotate-2 hover:rotate-0 transition-all duration-500">
+               <Image 
+                 src="https://images.unsplash.com/photo-1574635671569-42b4737d2f9d?q=80&w=1200" 
+                 alt="Quilting Machine" 
+                 fill 
+                 className="object-cover" 
+                 priority
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+               <div className="absolute bottom-6 left-6 text-white">
+                  <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Latest Work</p>
+                  <p className="font-serif text-2xl">Double Wedding Ring</p>
+               </div>
+            </div>
+            {/* Decorative Background blob */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-purple-200/50 to-pink-200/50 blur-3xl -z-10 rounded-full" />
+          </div>
+        </div>
+      </header>
+
+      {/* 3. THE SERVICE BAR (This is what you asked for!) */}
+      <section id="services" className="bg-white py-20 border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-bold mb-4">Our Services</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto">From simple edge-to-edge patterns to complex custom designs, we provide a full range of finishing services.</p>
+          </div>
+
+          {/* 👇 THE 4-COLUMN GRID LAYOUT */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
-            {[
-              { id: '01', title: 'In-Take', desc: 'Drop off or mail your prepped quilt top.', active: false },
-              { id: '02', title: 'Design Sync', desc: 'We select the perfect thread and pattern.', active: false },
-              { id: '03', title: 'Execution', desc: 'High-precision long-arm quilting.', active: true }
-            ].map((step, i) => (
-              <motion.div 
-                key={step.id} 
-                variants={item}
-                className="flex gap-6 items-start relative"
-              >
-                <div className={`size-10 rounded-full flex items-center justify-center shrink-0 z-10 shadow-sm font-bold text-sm transition-colors ${step.active ? 'bg-[#9d7de8] text-white' : 'bg-white dark:bg-[#1a2e20] border border-[#4f6b57]/20 text-[#4f6b57]'}`}>
-                  {step.id}
-                </div>
-                <div>
-                  <h4 className="font-bold text-lg leading-none">{step.title}</h4>
-                  <p className="text-sm text-[#4f6b57] dark:text-[#a0b8a7] font-serif leading-relaxed mt-1">{step.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+            {/* Card 1: E2E */}
+            <ServiceCard 
+              icon="all_inclusive" 
+              title="Edge-to-Edge" 
+              desc="Beautiful, continuous patterns stitched across your entire quilt top."
+              price="2.5¢ / sq inch"
+            />
+            
+            {/* Card 2: Custom */}
+            <ServiceCard 
+              icon="draw" 
+              title="Custom Quilting" 
+              desc="Intricate, block-specific designs that highlight your unique piecing."
+              price="5¢ / sq inch"
+              highlight
+            />
+
+            {/* Card 3: Binding (New!) */}
+            <ServiceCard 
+              icon="straighten" 
+              title="Binding Services" 
+              desc="Professional machine or hand binding for that perfect finished edge."
+              price="from $0.25 / inch"
+            />
+
+            {/* Card 4: Batting/Prep (New!) */}
+            <ServiceCard 
+              icon="layers" 
+              title="Batting & Prep" 
+              desc="High-quality batting supply and backing preparation services."
+              price="Varies by type"
+            />
+
           </div>
-        </section>
+        </div>
+      </section>
 
-      </motion.main>
-
-      {/* --- FAB (Start Project) --- */}
-      <motion.div 
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 1, type: "spring" }}
-        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[40] w-[calc(100%-48px)] max-w-sm"
-      >
-        <Link href="/wizard">
-            <button className="flex w-full items-center justify-between overflow-hidden rounded-2xl h-16 pl-8 pr-3 bg-[#0e1b12] dark:bg-white text-white dark:text-[#0e1b12] shadow-2xl active:scale-[0.98] transition-all group">
-              <span className="font-bold tracking-tight text-base">Start New Project</span>
-              <div className="bg-white/10 dark:bg-black/10 size-11 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                  <span className="material-symbols-outlined">straighten</span>
-              </div>
-            </button>
-        </Link>
-      </motion.div>
-
-      {/* --- BOTTOM NAV (Shared - Mobile Only) --- */}
-      {/* Kept this because standard navbars don't usually have bottom tabs */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f6f6f8]/95 dark:bg-[#161220]/95 backdrop-blur-md flex items-center justify-around px-8 border-t border-black/5 dark:border-white/5 z-[60]">
-        <Link href="/" className={`flex flex-col items-center gap-0.5 ${pathname === '/' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
-            <span className="material-symbols-outlined text-[24px]">home</span>
-            <span className="text-[10px] font-medium">Home</span>
-        </Link>
-        <Link href="/services" className={`flex flex-col items-center gap-0.5 ${pathname === '/services' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
-            <span className="material-symbols-outlined text-[24px]">dry_cleaning</span>
-            <span className="text-[10px] font-medium">Services</span>
-        </Link>
-        <Link href="/wizard" className={`flex flex-col items-center gap-0.5 ${pathname === '/wizard' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
-            <span className="material-symbols-outlined text-[24px]">calendar_today</span>
-            <span className="text-[10px] font-medium">Booking</span>
-        </Link>
-        <Link href="/contact" className={`flex flex-col items-center gap-0.5 ${pathname === '/contact' ? 'text-[#9d7de8]' : 'text-[#4f6b57] dark:text-[#a0b8a7]'}`}>
-            <span className="material-symbols-outlined text-[24px]">person</span>
-            <span className="text-[10px] font-medium">Profile</span>
-        </Link>
-      </div>
-
+      {/* 4. FOOTER */}
+      <footer className="bg-[#131118] text-white py-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="flex items-center gap-2 opacity-80">
+            <span className="material-symbols-outlined text-[#652bee]">local_florist</span>
+            <span className="font-serif font-bold">It Had To Be Sew</span>
+           </div>
+           <p className="text-sm text-slate-500">© 2026 It Had To Be Sew. All rights reserved.</p>
+           <div className="flex gap-6">
+              <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Instagram</span>
+              <span className="text-slate-400 hover:text-white cursor-pointer transition-colors">Facebook</span>
+           </div>
+        </div>
+      </footer>
     </div>
-  )
+  );
 }
+
+// Sub-component for the Service Cards to keep code clean
+const ServiceCard = ({ icon, title, desc, price, highlight }: any) => (
+  <div className={`p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col items-start h-full
+    ${highlight 
+      ? 'bg-[#652bee] text-white border-[#652bee] shadow-lg shadow-[#652bee]/20' 
+      : 'bg-white text-slate-800 border-slate-100 hover:border-slate-200'
+    }
+  `}>
+    <div className={`size-12 rounded-xl flex items-center justify-center mb-6 text-2xl
+      ${highlight ? 'bg-white/10 text-white' : 'bg-purple-50 text-[#652bee]'}
+    `}>
+      <span className="material-symbols-outlined">{icon}</span>
+    </div>
+    <h3 className="font-bold font-serif text-xl mb-3">{title}</h3>
+    <p className={`text-sm mb-6 leading-relaxed flex-1 ${highlight ? 'text-white/80' : 'text-slate-500'}`}>
+      {desc}
+    </p>
+    <div className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded
+       ${highlight ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'}
+    `}>
+      {price}
+    </div>
+  </div>
+);
