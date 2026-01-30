@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 👇 QUERY: Fetch EVERYTHING (...) so we can inspect field names
+// 👇 Fetch EVERYTHING to inspect structure
 const QUERY = `*[_type == "order"] | order(dueDate asc) {
   ...,
   "img": coalesce(image.asset->url, img.asset->url)
@@ -20,22 +20,30 @@ async function getOrders(): Promise<Order[]> {
     const data = await client.fetch(QUERY);
     
     return data.map((item: any) => {
-      // 🕵️‍♂️ X-RAY VISION: Get a list of all field names in this document
-      // We filter out system fields (starting with _) to see the content fields
-      const fieldNames = Object.keys(item).filter(key => !key.startsWith('_') && key !== 'img');
-      
+      // 1. Get all field names for debugging
+      const keys = Object.keys(item).filter(k => !k.startsWith('_') && k !== 'img');
+
       return {
         id: item._id,
-        // 👇 THIS WILL PRINT THE FIELD NAMES ON YOUR SCREEN
-        clientName: `FIELDS: ${fieldNames.join(', ')}`,
         
-        pattern: item.pattern || 'Pattern Unknown',
-        dimensions: item.dimensions || 'N/A',
-        dueDate: item.dueDate || new Date().toISOString(),
-        status: item.status || 'Pending',
-        battingLength: item.battingLength || 0,
-        materialsAvailable: item.materialsAvailable || false,
-        lowStock: item.lowStock || false,
+        // 🛡️ SAFETY FORCE-FIELD: We wrap everything in String() or JSON.stringify()
+        // This guarantees React only ever sees text.
+        
+        clientName: `FIELDS: ${keys.join(', ')}`,
+        
+        // If pattern is an object, turn it into text so it doesn't crash
+        pattern: typeof item.pattern === 'object' 
+          ? `(Ref: ${JSON.stringify(item.pattern)})` 
+          : String(item.pattern || 'No Pattern'),
+          
+        dimensions: String(item.dimensions || 'N/A'),
+        dueDate: String(item.dueDate || new Date().toISOString()),
+        status: String(item.status || 'Pending'),
+        
+        battingLength: Number(item.battingLength || 0),
+        materialsAvailable: Boolean(item.materialsAvailable),
+        lowStock: Boolean(item.lowStock),
+        
         img: item.img || 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600'
       };
     });
