@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
+// 👇 You must have this action created in app/actions.ts
+import { updateInventoryStock } from '../actions'; 
 
 // --- TYPES ---
 export interface Order {
@@ -30,11 +32,21 @@ export interface Order {
   img: string;
 }
 
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string;
+  isLowStock: boolean;
+  imageUrl?: string;
+}
+
 // --- HELPER: Profit Calculator ---
 const getProfitMetrics = (order: Order) => {
   const revenue = order.totalPrice || 0;
   
-  // Costs Configuration
+  // Costs Configuration (Edit these as needed)
   const laborRate = 25; // $25/hr
   const fabricCostPerUnit = 12; // $12/yd
   
@@ -59,10 +71,11 @@ const getProfitMetrics = (order: Order) => {
 // --- SUB-COMPONENT: Orders List ---
 const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], openOrder: (id: string) => void, showCompleted: boolean }) => {
   
-  // Filter: Show Completed tab vs Active tab
-  const displayOrders = orders.filter(o => 
-    showCompleted ? o.status === 'completed' : o.status !== 'completed'
-  );
+  // Filter based on tab
+  const displayOrders = orders.filter(o => {
+    const status = o.status.toLowerCase();
+    return showCompleted ? status === 'completed' : status !== 'completed';
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -75,6 +88,7 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
 
         {displayOrders.map((order) => {
           const financials = getProfitMetrics(order);
+          const status = order.status.toLowerCase();
 
           return (
             <div 
@@ -88,11 +102,11 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${
-                      order.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                      order.status === 'in-progress' ? 'bg-purple-100 text-purple-700' :
+                      status === 'completed' ? 'bg-green-100 text-green-800' : 
+                      (status === 'in-progress' || status === 'in progress') ? 'bg-purple-100 text-purple-700' :
                       'bg-[#652bee]/10 text-[#652bee]'
                     }`}>
-                      {order.status === 'in-progress' ? 'In Progress' : order.status}
+                      {status === 'in-progress' || status === 'in progress' ? 'In Progress' : order.status}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold font-serif leading-tight text-slate-900 dark:text-white group-hover:text-[#652bee] transition-colors">
@@ -144,22 +158,111 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
   );
 };
 
-// --- INVENTORY VIEW (Placeholder) ---
-const InventoryView = () => (
-  <div className="text-center p-12 text-slate-400 animate-in fade-in">
-    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">inventory_2</span>
-    <p>Inventory Module Coming Soon</p>
-  </div>
-);
+// --- SUB-COMPONENT: Inventory List ---
+const InventoryView = ({ items }: { items: InventoryItem[] }) => {
+  const [isPending, startTransition] = useTransition();
+
+  const handleAdjustStock = (id: string, currentQty: number, change: number) => {
+    startTransition(async () => {
+      // Calculate new qty but prevent negative numbers
+      const newQty = Math.max(0, currentQty + change);
+      // Trigger Server Action
+      await updateInventoryStock(id, newQty);
+    });
+  };
+
+  const lowStockItems = items.filter(i => i.isLowStock);
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* ALERT BOX */}
+      {lowStockItems.length > 0 && (
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 p-4 rounded-xl flex items-start gap-3">
+          <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">warning</span>
+          <div>
+            <h4 className="font-bold text-orange-900 dark:text-orange-100 text-sm">Low Stock Alert</h4>
+            <p className="text-xs text-orange-800 dark:text-orange-200 mt-1">
+              You are running low on: <strong>{lowStockItems.map(i => i.name).join(', ')}</strong>.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* GRID */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {items.length === 0 && (
+          <div className="col-span-full p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+             No inventory items found. Add them in Sanity!
+          </div>
+        )}
+        
+        {items.map((item) => (
+          <div key={item.id} className="bg-white dark:bg-[#1e1635] p-6 rounded-2xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] relative overflow-hidden group">
+            <div className="flex justify-between items-start mb-4 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="size-10 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center overflow-hidden relative">
+                   {item.imageUrl ? (
+                     <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                   ) : (
+                     <span className="material-symbols-outlined text-slate-500">
+                       {item.category === 'thread' ? 'spool' : item.category === 'batting' ? 'layers' : 'inventory_2'}
+                     </span>
+                   )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">{item.name}</h3>
+                  <p className="text-xs text-slate-500 font-mono uppercase tracking-wider">{item.category}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-end relative z-10">
+               <div className="flex-1">
+                  <p className={`text-3xl font-bold font-display ${item.isLowStock ? 'text-orange-500' : 'text-slate-900 dark:text-white'}`}>
+                    {item.quantity} <span className="text-sm font-normal text-slate-400">{item.unit}</span>
+                  </p>
+               </div>
+               
+               {/* Adjustment Buttons */}
+               <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/10 rounded-lg p-1">
+                 <button 
+                   onClick={() => handleAdjustStock(item.id, item.quantity, -1)}
+                   disabled={isPending}
+                   className="size-8 flex items-center justify-center rounded-md bg-white dark:bg-[#1e1635] shadow-sm hover:text-red-500 disabled:opacity-50 transition-colors"
+                 >
+                   -
+                 </button>
+                 <button 
+                   onClick={() => handleAdjustStock(item.id, item.quantity, 1)}
+                   disabled={isPending}
+                   className="size-8 flex items-center justify-center rounded-md bg-white dark:bg-[#1e1635] shadow-sm hover:text-green-500 disabled:opacity-50 transition-colors"
+                 >
+                   +
+                 </button>
+               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // --- MAIN EXPORT ---
-export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
+export const AdminDashboard = ({ 
+  initialOrders, 
+  initialInventory 
+}: { 
+  initialOrders: Order[], 
+  initialInventory?: InventoryItem[] // Optional in case data fails to load
+}) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<'queue' | 'inventory'>('queue');
   const [showCompleted, setShowCompleted] = useState(false);
 
-  // Modal State Logic
+  // Modal Logic
   const activeOrderId = searchParams.get('orderId');
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
@@ -196,7 +299,7 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
          </nav>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 md:ml-64 pb-32 md:pb-10">
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
              <div className="flex items-center gap-4">
@@ -233,18 +336,18 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
             {currentView === 'queue' ? (
                <OrdersView orders={initialOrders} openOrder={openOrder} showCompleted={showCompleted} />
             ) : (
-               <InventoryView />
+               <InventoryView items={initialInventory || []} />
             )}
          </div>
       </main>
 
-      {/* MOBILE BOTTOM NAV */}
+      {/* MOBILE NAV */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden z-30">
           <button onClick={() => setCurrentView('queue')} className="p-2 font-bold text-sm">Orders</button>
           <button onClick={() => setCurrentView('inventory')} className="p-2 font-bold text-sm">Stock</button>
       </nav>
 
-      {/* MODAL POPUP */}
+      {/* MODAL */}
       <ProjectWorkspaceModal 
         order={selectedOrder} 
         isOpen={!!selectedOrder} 

@@ -51,3 +51,20 @@ export async function updateOrderTime(orderId: string, seconds: number) {
     return { success: false, error };
   }
 }
+// ... existing imports
+
+// 👇 NEW: Update Inventory Quantity
+export async function updateInventoryStock(id: string, newQuantity: number) {
+  try {
+    await writeClient
+      .patch(id)
+      .set({ quantity: newQuantity })
+      .commit();
+      
+    revalidatePath("/admin/queue");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update stock:", error);
+    return { success: false, error };
+  }
+}
