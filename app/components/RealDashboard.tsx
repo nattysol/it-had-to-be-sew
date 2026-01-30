@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+// 👇 Import the Modal Component
+import { ProjectWorkspaceModal } from './ProjectWorkspaceModal';
 
 // --- TYPES ---
 export interface Order {
@@ -20,9 +22,9 @@ export interface Order {
 
 // --- SUB-COMPONENTS ---
 const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: string) => void }) => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  <div className="space-y-6 animate-fade-in">
     <div className="flex items-center justify-between">
-      <h2 className="text-lg font-bold font-serif">Current Queue</h2>
+      <h2 className="text-lg font-bold font-serif text-slate-800 dark:text-white">Current Queue</h2>
       <button className="bg-[#652bee]/10 text-[#652bee] px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#652bee]/20 transition-colors">
         Filter
       </button>
@@ -32,7 +34,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
         <div 
           key={order.id}
           onClick={() => openOrder(order.id)}
-          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-shadow group relative"
+          className="bg-white dark:bg-[#1e1635] rounded-xl shadow-sm border border-[#f0f0f2] dark:border-[#2d2445] overflow-hidden cursor-pointer hover:shadow-md transition-all group relative hover:translate-y-[-2px]"
         >
           <div className="p-5 relative z-10">
             <div className="flex justify-between items-start mb-4">
@@ -42,7 +44,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
                 }`}>
                   {order.status}
                 </span>
-                <h3 className="text-xl font-bold font-serif leading-tight group-hover:text-[#652bee] transition-colors">
+                <h3 className="text-xl font-bold font-serif leading-tight text-slate-900 dark:text-white group-hover:text-[#652bee] transition-colors">
                   {order.clientName}
                 </h3>
               </div>
@@ -64,8 +66,8 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
                 <p className="text-sm">{order.pattern}</p>
               </div>
             </div>
-            <button className="w-full bg-[#652bee] text-white py-3 rounded-xl font-bold text-sm">
-              {order.status === 'In Progress' ? 'Resume Work' : 'Start Quilting'}
+            <button className="w-full bg-[#652bee] text-white py-3 rounded-xl font-bold text-sm hover:bg-[#5423c9] transition-colors shadow-lg shadow-[#652bee]/20">
+              {order.status === 'In Progress' ? 'Resume Work' : 'Open Project'}
             </button>
           </div>
           <div className="h-[150px] w-full relative opacity-90 group-hover:opacity-100 transition-opacity mt-[-20px]">
@@ -79,7 +81,7 @@ const OrdersView = ({ orders, openOrder }: { orders: Order[], openOrder: (id: st
 );
 
 const InventoryView = () => (
-  <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+  <div className="space-y-8 animate-fade-in">
     <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800 p-4 rounded-xl flex items-start gap-3">
       <span className="material-symbols-outlined text-orange-600 dark:text-orange-400">warning</span>
       <div>
@@ -96,7 +98,7 @@ const InventoryView = () => (
             <span className="material-symbols-outlined text-slate-500">spool</span>
           </div>
           <div>
-            <h3 className="font-bold text-lg">Glide - Cool Grey</h3>
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Glide - Cool Grey</h3>
             <p className="text-xs text-slate-500 font-mono">Cone #42</p>
           </div>
         </div>
@@ -109,7 +111,7 @@ const InventoryView = () => (
             <div className="absolute bottom-0 left-0 right-0 bg-[#652bee] h-[40%] transition-all duration-1000"></div>
          </div>
          <div className="flex-1 pb-2">
-            <p className="text-3xl font-bold font-display">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
+            <p className="text-3xl font-bold font-display text-slate-900 dark:text-white">1,240 <span className="text-sm font-normal text-slate-400">yds</span></p>
             <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Remaining Capacity</p>
          </div>
       </div>
@@ -117,19 +119,24 @@ const InventoryView = () => (
   </div>
 );
 
-// ✅ EXPORT NAME MATCHES
+// 👇 The Main Export
 export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<'orders' | 'inventory'>('orders');
 
+  // 1. DETECT ACTIVE ORDER
   const activeOrderId = searchParams.get('orderId');
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
+  // 2. NAVIGATE FUNCTIONS
   const openOrder = (id: string) => {
+    // This pushes the URL, which triggers the modal to appear
     router.push(`/admin/queue?orderId=${id}`, { scroll: false });
   };
+  
   const closeOrder = () => {
+    // This clears the URL, which closes the modal
     router.push('/admin/queue', { scroll: false });
   };
 
@@ -149,7 +156,7 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
       {/* CONTENT */}
       <main className="flex-1 md:ml-64 pb-32 md:pb-10">
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
-             <h2 className="text-3xl font-bold font-display capitalize">{currentView} Dashboard</h2>
+             <h2 className="text-3xl font-bold font-display capitalize text-slate-900 dark:text-white">{currentView} Dashboard</h2>
              <div className="flex items-center gap-4">
                 <span className="text-sm font-bold opacity-60">Admin User</span>
                 <div className="size-10 bg-gray-200 rounded-full"></div>
@@ -164,18 +171,25 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
             )}
          </div>
       </main>
-
-      {/* MOBILE NAV FOR SAFETY */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden">
-          <button onClick={() => setCurrentView('orders')}>Orders</button>
-          <button onClick={() => setCurrentView('inventory')}>Stock</button>
+      
+      {/* MOBILE SAFETY NAV */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden z-30">
+          <button onClick={() => setCurrentView('orders')} className="p-2 font-bold text-sm">Orders</button>
+          <button onClick={() => setCurrentView('inventory')} className="p-2 font-bold text-sm">Stock</button>
       </nav>
+
+      {/* 👇 3. THE MODAL IS FINALLY HERE */}
+      <ProjectWorkspaceModal 
+        order={selectedOrder} 
+        isOpen={!!selectedOrder} 
+        onClose={closeOrder} 
+      />
     </div>
   );
 };
 
 const NavButton = ({ icon, label, active, onClick }: { icon: string, label: string, active: boolean, onClick: () => void }) => (
-  <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${active ? 'bg-[#652bee] text-white' : 'text-slate-500 hover:bg-black/5'}`}>
+  <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${active ? 'bg-[#652bee] text-white shadow-lg shadow-[#652bee]/20' : 'text-slate-500 hover:bg-black/5'}`}>
     <span className="material-symbols-outlined">{icon}</span>
     {label}
   </button>
