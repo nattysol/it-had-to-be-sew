@@ -68,3 +68,87 @@ export async function updateInventoryStock(id: string, newQuantity: number) {
     return { success: false, error };
   }
 }
+// ... existing imports ...
+// (Make sure you have these imported at the top: createClient, revalidatePath)
+
+// 👇 NEW: Create a new order from the Wizard
+export async function createOrder(orderData: any) {
+  try {
+    console.log("Creating order...", orderData);
+
+    const doc = {
+      _type: 'order',
+      status: 'pending',
+      orderDate: new Date().toISOString(),
+      
+      // Customer Info
+      customer: {
+        firstName: orderData.customer.firstName,
+        lastName: orderData.customer.lastName,
+        email: orderData.customer.email,
+        phone: orderData.customer.phone,
+        address: orderData.customer.address,
+        city: orderData.customer.city,
+        state: orderData.customer.state,
+        zip: orderData.customer.zip,
+      },
+
+      // Dimensions
+      dimensions: {
+        width: Number(orderData.dimensions.width),
+        height: Number(orderData.dimensions.height),
+      },
+
+      // Pattern (If selected)
+      pattern: orderData.selectedPattern ? {
+        _type: 'reference',
+        _ref: orderData.selectedPattern._id
+      } : undefined,
+
+      // Design Details
+      designDetails: {
+        threadColor: orderData.designDetails.threadColor,
+        isDirectional: orderData.designDetails.isDirectional,
+      },
+
+      // Materials
+      backing: {
+        width: Number(orderData.backing.width),
+        height: Number(orderData.backing.height),
+      },
+      
+      // We store the selected batting info as text for now
+      battingDescription: orderData.selectedBatting?.name,
+
+      // Finishing
+      trimming: {
+        wanted: orderData.trimming.wanted,
+        method: orderData.trimming.method,
+        returnScraps: orderData.trimming.returnScraps
+      },
+      binding: {
+        wanted: orderData.binding.wanted,
+        method: orderData.binding.method,
+        stripWidth: orderData.binding.stripWidth
+      },
+
+      // Consent
+      consent: {
+        socialMedia: orderData.consent.socialMedia
+      },
+      
+      // Estimated Price (Saved for reference)
+      estimatedTotal: orderData.estimatedTotal
+    };
+
+    const result = await writeClient.create(doc);
+    
+    // Refresh the admin dashboard so the new order appears immediately
+    revalidatePath("/admin/queue");
+    
+    return { success: true, id: result._id };
+  } catch (error) {
+    console.error("Failed to create order:", error);
+    return { success: false, error: String(error) };
+  }
+}
