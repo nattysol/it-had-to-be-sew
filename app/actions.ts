@@ -171,3 +171,66 @@ export async function createInventoryItem(name: string, category: string, quanti
     return { success: false, error };
   }
 }
+// ... existing imports
+
+// 👇 NEW: Real AI Pattern Matcher
+export async function getAIPatternSuggestions(userQuery: string, availablePatterns: any[]) {
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("No OpenAI API Key found");
+      // Fallback to simple filtering if no key is present (so app doesn't crash)
+      const lowerQuery = userQuery.toLowerCase();
+      const filtered = availablePatterns.filter(p => 
+        p.title.toLowerCase().includes(lowerQuery) || 
+        p.category?.toLowerCase().includes(lowerQuery)
+      );
+      return { success: true, matches: filtered.map(p => p._id) };
+    }
+
+    // 1. Construct the Prompt for the AI
+    // We send a lightweight version of the patterns to save tokens
+    const patternListLite = availablePatterns.map(p => ({ id: p._id, title: p.title, category: p.category }));
+    
+    const prompt = `
+      You are an expert longarm quilter. 
+      I have a user looking for a quilt pattern. 
+      
+      User Request: "${userQuery}"
+      
+      Here are my available patterns:
+      ${JSON.stringify(patternListLite)}
+      
+      Task: Select the top 4 patterns that best match the user's request, mood, or theme.
+      (e.g. if they say "Valentines", look for hearts, love, swirls, or romantic names).
+      
+      Return ONLY a JSON array of the matching IDs, like this: ["id1", "id2"].
+      Do not add any markdown formatting or explanation.
+    `;
+
+    // 2. Call OpenAI API
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo", // or "gpt-4o" for smarter results
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7
+      })
+    });
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+
+    // 3. Parse the result
+    const suggestedIds = JSON.parse(content);
+    
+    return { success: true, matches: suggestedIds };
+
+  } catch (error) {
+    console.error("AI Match Failed:", error);
+    return { success: false, error };
+  }
+}

@@ -10,52 +10,37 @@ export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 👇 QUERY: Fetches BOTH Orders and Inventory in a single request
+// 👇 1. UPDATE QUERY to get full customer details
 const QUERY = `{
   "orders": *[_type == "order"] | order(orderDate asc) {
     _id,
-    
-    // 1. Customer Name (Object)
     "firstName": customer.firstName,
     "lastName": customer.lastName,
+    
+    // NEW: Contact Info
+    "email": customer.email,
+    "phone": customer.phone,
+    "address": customer.address,
+    "city": customer.city,
+    "state": customer.state,
+    "zip": customer.zip,
 
-    // 2. Pattern (Reference)
     "patternName": coalesce(pattern->name, pattern->title, "Custom Pattern"),
-
-    // 3. Dimensions (Object)
     "width": dimensions.width,
     "height": dimensions.height,
-
-    // 4. Materials & Details
     "backingHeight": backing.height,
     "backingWidth": backing.width,
     "bindingMethod": binding.method,
     "threadColor": designDetails.threadColor,
-
-    // 5. Financials & Status
     orderDate,
     status,
     totalPrice,
     actualFabricUsed,
     actualTimeSeconds,
-    
-    // 6. Image Logic (Check Pattern first, then Order)
-    "img": coalesce(
-      pattern->image.asset->url, 
-      pattern->img.asset->url, 
-      image.asset->url, 
-      img.asset->url
-    )
+    "img": coalesce(pattern->image.asset->url, pattern->img.asset->url, image.asset->url, img.asset->url)
   },
-  
   "inventory": *[_type == "inventory"] | order(name asc) {
-    _id,
-    name,
-    category,
-    quantity,
-    unit,
-    lowStockThreshold,
-    "imageUrl": image.asset->url
+    _id, name, category, quantity, unit, lowStockThreshold, "imageUrl": image.asset->url
   }
 }`;
 
@@ -63,32 +48,28 @@ async function getData() {
   try {
     const data = await client.fetch(QUERY);
     
-    // 1. MAP ORDERS
+    // 2. MAP THE NEW FIELDS
     const orders: Order[] = (data.orders || []).map((item: any) => ({
       id: item._id,
-      
-      // Combine Names
       clientName: `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'Unknown Client',
       
+      // Store full contact info in the order object
+      customer: {
+        email: item.email || 'N/A',
+        phone: item.phone || 'N/A',
+        address: item.address ? `${item.address}, ${item.city}, ${item.state} ${item.zip}` : 'No Address'
+      },
+
       pattern: item.patternName || 'Custom Pattern',
-      
-      // Combine Dimensions
       dimensions: (item.width && item.height) ? `${item.width}" x ${item.height}"` : 'N/A',
-      
       dueDate: item.orderDate || new Date().toISOString(),
       status: item.status || 'pending',
-      
-      // Materials
       backing: (item.backingWidth && item.backingHeight) ? `${item.backingWidth}" x ${item.backingHeight}"` : 'Not specified',
       binding: item.bindingMethod || 'Standard',
       thread: item.threadColor || 'White',
-
-      // Financials (Pass raw data, Dashboard calculates profit)
       totalPrice: item.totalPrice || 0,
       actualFabricUsed: item.actualFabricUsed || "0",
       actualTimeSeconds: item.actualTimeSeconds || 0,
-      
-      // UI Defaults
       battingLength: 100, 
       materialsAvailable: true, 
       lowStock: false,

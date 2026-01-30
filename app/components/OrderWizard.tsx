@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from 'next-sanity'
 import { useOrderStore } from '../store/useOrderStore'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createOrder } from '../actions' 
+// 👇 Import the new AI Action
+import { createOrder, getAIPatternSuggestions } from '../actions' 
 
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, 
@@ -44,9 +45,10 @@ export default function OrderWizard() {
   const [orderComplete, setOrderComplete] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   
-  // 👇 NEW: AI Helper State
+  // AI State
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [suggestedPatternIds, setSuggestedPatternIds] = useState<string[] | null>(null) // Null means show all
 
   // 1. FETCH LIVE DATA
   useEffect(() => {
@@ -64,20 +66,32 @@ export default function OrderWizard() {
     })
   }, [])
 
-  // 👇 FILTER LOGIC: Simulates AI matching for now
-  const filteredPatterns = patterns.filter(p => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    // basic matching on title and category
-    return p.title?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
-  });
+  // 2. THE REAL AI HANDLER
+  const handleAISearch = async () => {
+    if (!searchQuery.trim()) {
+        setSuggestedPatternIds(null);
+        return;
+    }
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setSearchQuery(e.target.value);
     setIsSearching(true);
-    // Simulate "thinking" delay
-    setTimeout(() => setIsSearching(false), 500);
+    
+    // Call Server Action
+    const result = await getAIPatternSuggestions(searchQuery, patterns);
+    
+    if (result.success && Array.isArray(result.matches)) {
+        setSuggestedPatternIds(result.matches);
+    } else {
+        // Fallback or error handling
+        console.warn("AI Search failed, showing all.");
+    }
+    
+    setIsSearching(false);
   };
+
+  // Determine which patterns to display
+  const displayedPatterns = suggestedPatternIds 
+    ? patterns.filter(p => suggestedPatternIds.includes(p._id))
+    : patterns;
 
   const handleSubmit = async () => {
     setErrorMessage('');
@@ -94,7 +108,6 @@ export default function OrderWizard() {
 
   if (orderComplete) return <SuccessView />
 
-  // --- STYLING ---
   const inputClass = "w-full p-4 rounded-xl border border-slate-200 bg-white text-slate-800 outline-none focus:ring-2 focus:ring-[#652bee] focus:border-[#652bee] placeholder:text-slate-300 transition-all shadow-sm";
   const labelClass = "text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block";
   const sectionTitle = "text-2xl font-bold font-serif text-[#131118] mb-6 mt-10 first:mt-0";
@@ -140,27 +153,39 @@ export default function OrderWizard() {
 
               <h3 className={sectionTitle}>Pattern Selection</h3>
               
-              {/* 👇 AI HELPER FIELD */}
+              {/* 👇 REAL AI SEARCH FIELD */}
               <div className="relative mb-6">
-                <div className="absolute top-4 left-4">
-                  <span className={`material-symbols-outlined text-lg ${isSearching ? 'text-[#652bee] animate-spin' : 'text-[#652bee]'}`}>
-                    {isSearching ? 'sync' : 'auto_awesome'}
-                  </span>
-                </div>
-                <textarea 
-                  className={`${inputClass} pl-12 h-24 resize-none`}
-                  placeholder="Describe your ideal pattern (e.g. 'Valentines day for a woman', 'Modern geometric', 'Floral swirls')..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
-                {isSearching && (
-                   <span className="absolute bottom-4 right-4 text-xs font-bold text-[#652bee] animate-pulse">AI is looking...</span>
-                )}
+                 <div className="relative">
+                    <textarea 
+                    className={`${inputClass} pr-12 h-24 resize-none`}
+                    placeholder="Ask our AI... (e.g. 'I need something for a baby boy', 'Modern swirls for a wedding quilt')..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                        if(e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAISearch();
+                        }
+                    }}
+                    />
+                    <button 
+                        onClick={handleAISearch}
+                        disabled={isSearching || !searchQuery}
+                        className="absolute bottom-3 right-3 bg-[#652bee] text-white p-2 rounded-lg hover:bg-[#5423c9] disabled:opacity-50 transition-colors"
+                    >
+                        {isSearching ? <span className="material-symbols-outlined animate-spin text-sm">sync</span> : <span className="material-symbols-outlined text-sm">auto_awesome</span>}
+                    </button>
+                 </div>
+                 {suggestedPatternIds && (
+                     <button onClick={() => { setSuggestedPatternIds(null); setSearchQuery(''); }} className="text-xs text-slate-400 hover:text-[#652bee] mt-2 flex items-center gap-1">
+                         <span className="material-symbols-outlined text-sm">close</span> Clear AI Filter
+                     </button>
+                 )}
               </div>
 
               {/* PATTERN GRID */}
               <div className="grid grid-cols-2 gap-4 mb-8">
-                 {filteredPatterns.map((p) => (
+                 {displayedPatterns.map((p) => (
                    <div 
                      key={p._id} 
                      onClick={() => selectPattern(p)} 
@@ -183,18 +208,11 @@ export default function OrderWizard() {
                    </div>
                  ))}
                  
-                 {/* EMPTY STATE */}
-                 {filteredPatterns.length === 0 && patterns.length > 0 && (
+                 {displayedPatterns.length === 0 && (
                     <div className="col-span-2 p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
                         <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
-                        <p className="text-slate-500 font-medium">No patterns match that description.</p>
-                        <button onClick={() => setSearchQuery('')} className="text-[#652bee] font-bold text-sm mt-2 hover:underline">Show All Patterns</button>
-                    </div>
-                 )}
-
-                 {patterns.length === 0 && (
-                    <div className="col-span-2 p-6 text-center border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
-                        No patterns loaded from database.
+                        <p className="text-slate-500 font-medium">No patterns match that request.</p>
+                        <button onClick={() => setSuggestedPatternIds(null)} className="text-[#652bee] font-bold text-sm mt-2 hover:underline">Show All Patterns</button>
                     </div>
                  )}
               </div>

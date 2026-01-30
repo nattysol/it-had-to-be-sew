@@ -10,6 +10,12 @@ import { updateInventoryStock, createInventoryItem } from '../actions'; // 👈 
 export interface Order {
   id: string;
   clientName: string;
+  // 👇 NEW: Customer Details Object
+  customer?: {
+    email: string;
+    phone: string;
+    address: string;
+  };
   pattern: string;
   dimensions: string;
   dueDate: string;
