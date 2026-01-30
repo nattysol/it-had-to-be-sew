@@ -152,3 +152,22 @@ export async function createOrder(orderData: any) {
     return { success: false, error: String(error) };
   }
 }
+// 👇 NEW: Create Inventory Item
+export async function createInventoryItem(name: string, category: string, quantity: number, unit: string) {
+  try {
+    await writeClient.create({
+      _type: 'inventory',
+      name,
+      category,
+      quantity,
+      unit,
+      lowStockThreshold: 5 // Default threshold
+    });
+    
+    revalidatePath("/admin/queue");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to create item:", error);
+    return { success: false, error };
+  }
+}

@@ -43,8 +43,12 @@ export default function OrderWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  
+  // 👇 NEW: AI Helper State
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
-  // 1. FETCH LIVE DATA (Patterns & Thread Inventory)
+  // 1. FETCH LIVE DATA
   useEffect(() => {
     const query = `{
       "patterns": *[_type == "pattern" || _type == "pantograph"]{_id, title, category, "imageUrl": image.asset->url, "imgUrl": img.asset->url},
@@ -52,16 +56,28 @@ export default function OrderWizard() {
     }`
     
     client.fetch(query).then(data => {
-      // Patterns
       const mappedPatterns = (data.patterns || []).map((p: any) => ({
         ...p, imageUrl: p.imageUrl || p.imgUrl
       }))
       setPatterns(mappedPatterns)
-
-      // Threads
       setThreads(data.threads || [])
     })
   }, [])
+
+  // 👇 FILTER LOGIC: Simulates AI matching for now
+  const filteredPatterns = patterns.filter(p => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    // basic matching on title and category
+    return p.title?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q);
+  });
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSearchQuery(e.target.value);
+    setIsSearching(true);
+    // Simulate "thinking" delay
+    setTimeout(() => setIsSearching(false), 500);
+  };
 
   const handleSubmit = async () => {
     setErrorMessage('');
@@ -84,7 +100,6 @@ export default function OrderWizard() {
   const sectionTitle = "text-2xl font-bold font-serif text-[#131118] mb-6 mt-10 first:mt-0";
 
   return (
-    // 👇 ADDED padding-bottom-64 to allow scrolling past the fixed calculator
     <div className="bg-[#f8f7fa] min-h-screen font-sans text-[#131118] pb-64">
       
       {/* TOP BAR */}
@@ -111,7 +126,6 @@ export default function OrderWizard() {
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
               
-              {/* DIMENSIONS */}
               <h3 className={sectionTitle}>Measurements</h3>
               <div className="flex gap-4 mb-8">
                 <div className="flex-1">
@@ -124,10 +138,29 @@ export default function OrderWizard() {
                 </div>
               </div>
 
-              {/* PATTERN SELECTOR (Restored) */}
-              <h3 className={sectionTitle}>Select Pattern</h3>
+              <h3 className={sectionTitle}>Pattern Selection</h3>
+              
+              {/* 👇 AI HELPER FIELD */}
+              <div className="relative mb-6">
+                <div className="absolute top-4 left-4">
+                  <span className={`material-symbols-outlined text-lg ${isSearching ? 'text-[#652bee] animate-spin' : 'text-[#652bee]'}`}>
+                    {isSearching ? 'sync' : 'auto_awesome'}
+                  </span>
+                </div>
+                <textarea 
+                  className={`${inputClass} pl-12 h-24 resize-none`}
+                  placeholder="Describe your ideal pattern (e.g. 'Valentines day for a woman', 'Modern geometric', 'Floral swirls')..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+                {isSearching && (
+                   <span className="absolute bottom-4 right-4 text-xs font-bold text-[#652bee] animate-pulse">AI is looking...</span>
+                )}
+              </div>
+
+              {/* PATTERN GRID */}
               <div className="grid grid-cols-2 gap-4 mb-8">
-                 {patterns.map((p) => (
+                 {filteredPatterns.map((p) => (
                    <div 
                      key={p._id} 
                      onClick={() => selectPattern(p)} 
@@ -149,14 +182,23 @@ export default function OrderWizard() {
                       <p className={`text-sm font-bold truncate ${selectedPattern?._id === p._id ? 'text-[#652bee]' : 'text-slate-700'}`}>{p.title}</p>
                    </div>
                  ))}
+                 
+                 {/* EMPTY STATE */}
+                 {filteredPatterns.length === 0 && patterns.length > 0 && (
+                    <div className="col-span-2 p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
+                        <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
+                        <p className="text-slate-500 font-medium">No patterns match that description.</p>
+                        <button onClick={() => setSearchQuery('')} className="text-[#652bee] font-bold text-sm mt-2 hover:underline">Show All Patterns</button>
+                    </div>
+                 )}
+
                  {patterns.length === 0 && (
                     <div className="col-span-2 p-6 text-center border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
-                        No patterns loaded.
+                        No patterns loaded from database.
                     </div>
                  )}
               </div>
               
-              {/* THREAD SELECTOR (New Live Inventory) */}
               <h3 className={sectionTitle}>Thread Choice</h3>
               <p className="text-slate-500 mb-4 text-sm">Select from our in-stock Glide thread collection.</p>
               
@@ -181,7 +223,6 @@ export default function OrderWizard() {
                         <p className="text-[10px] font-bold leading-tight line-clamp-2">{t.name}</p>
                     </div>
                 ))}
-                 {/* "Surprise Me" Option */}
                  <div 
                     onClick={() => updateDesign('threadColor', 'Artist Choice')}
                     className={`rounded-xl border-2 border-dashed border-slate-300 p-2 cursor-pointer text-center flex flex-col items-center justify-center ${designDetails.threadColor === 'Artist Choice' ? 'bg-[#652bee]/10 border-[#652bee]' : 'hover:bg-slate-50'}`}
