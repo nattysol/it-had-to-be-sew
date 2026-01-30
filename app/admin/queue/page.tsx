@@ -9,23 +9,33 @@ export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 👇 QUERY MATCHING YOUR EXACT JSON
+// 👇 QUERY: Fetches Customer, Pattern, Dimensions, Materials, and Financials
 const QUERY = `*[_type == "order"] | order(orderDate asc) {
   _id,
   
-  // 1. CUSTOMER (Direct Object Access)
+  // 1. Customer Name (Object)
   "firstName": customer.firstName,
   "lastName": customer.lastName,
 
-  // 2. PATTERN (Reference Link)
+  // 2. Pattern (Reference)
   "patternName": coalesce(pattern->name, pattern->title, "Custom Pattern"),
 
-  // 3. DIMENSIONS (Direct Object Access)
+  // 3. Dimensions (Object)
   "width": dimensions.width,
   "height": dimensions.height,
 
+  // 4. Materials & Details
+  "backingHeight": backing.height,
+  "backingWidth": backing.width,
+  "bindingMethod": binding.method,
+  "threadColor": designDetails.threadColor,
+
+  // 5. Financials & Status
   orderDate,
   status,
+  totalPrice,
+  actualFabricUsed,
+  actualTimeSeconds,
   
   "img": coalesce(image.asset->url, img.asset->url)
 }`;
@@ -37,18 +47,29 @@ async function getOrders(): Promise<Order[]> {
     return data.map((item: any) => ({
       id: item._id,
       
-      // ✅ Combine First + Last Name
+      // Combine Names
       clientName: `${item.firstName || ''} ${item.lastName || ''}`.trim() || 'Unknown Client',
       
       pattern: item.patternName || 'Custom Pattern',
       
-      // ✅ Combine Width + Height into a string
+      // Combine Dimensions
       dimensions: (item.width && item.height) ? `${item.width}" x ${item.height}"` : 'N/A',
       
       dueDate: item.orderDate || new Date().toISOString(),
-      status: item.status || 'Pending',
+      status: item.status || 'pending',
       
-      battingLength: 100, // Placeholder
+      // Materials
+      backing: (item.backingWidth && item.backingHeight) ? `${item.backingWidth}" x ${item.backingHeight}"` : 'Not specified',
+      binding: item.bindingMethod || 'Standard',
+      thread: item.threadColor || 'White',
+
+      // Financials (Pass raw data, Dashboard calculates profit)
+      totalPrice: item.totalPrice || 0,
+      actualFabricUsed: item.actualFabricUsed || "0",
+      actualTimeSeconds: item.actualTimeSeconds || 0,
+      
+      // UI Defaults
+      battingLength: 100, 
       materialsAvailable: true, 
       lowStock: false,
       img: item.img || 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600'

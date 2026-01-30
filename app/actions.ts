@@ -34,3 +34,20 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
     return { success: false, error };
   }
 }
+// ... (keep existing updateOrderStatus)
+
+// 👇 NEW: Save the timer data
+export async function updateOrderTime(orderId: string, seconds: number) {
+  try {
+    await writeClient
+      .patch(orderId)
+      .set({ actualTimeSeconds: seconds })
+      .commit();
+      
+    revalidatePath("/admin/queue");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to save time:", error);
+    return { success: false, error };
+  }
+}

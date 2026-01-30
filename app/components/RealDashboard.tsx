@@ -14,9 +14,14 @@ export interface Order {
   dueDate: string;
   status: string;
   
+  // Specific Materials
+  backing?: string;
+  binding?: string;
+  thread?: string;
+
   // Financials
   totalPrice?: number;
-  actualFabricUsed?: string; // It came as a string in your JSON "24"
+  actualFabricUsed?: string; 
   actualTimeSeconds?: number;
 
   battingLength: number;
@@ -29,9 +34,9 @@ export interface Order {
 const getProfitMetrics = (order: Order) => {
   const revenue = order.totalPrice || 0;
   
-  // 1. Calculate Costs
-  const laborRate = 25; // $25 per hour
-  const fabricCostPerUnit = 12; // $12 per yard/unit
+  // Costs Configuration
+  const laborRate = 25; // $25/hr
+  const fabricCostPerUnit = 12; // $12/yd
   
   const hours = (order.actualTimeSeconds || 0) / 3600;
   const fabric = parseFloat(order.actualFabricUsed || "0");
@@ -54,13 +59,13 @@ const getProfitMetrics = (order: Order) => {
 // --- SUB-COMPONENT: Orders List ---
 const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], openOrder: (id: string) => void, showCompleted: boolean }) => {
   
-  // Filter based on the tab selected
+  // Filter: Show Completed tab vs Active tab
   const displayOrders = orders.filter(o => 
     showCompleted ? o.status === 'completed' : o.status !== 'completed'
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid gap-6">
         {displayOrders.length === 0 && (
           <div className="p-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
@@ -79,13 +84,15 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
             >
               <div className="p-5 relative z-10 flex flex-col md:flex-row gap-6">
                 
-                {/* 1. Main Info */}
+                {/* 1. Main Info Column */}
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${
-                      order.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-[#652bee]/10 text-[#652bee]'
+                      order.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                      order.status === 'in-progress' ? 'bg-purple-100 text-purple-700' :
+                      'bg-[#652bee]/10 text-[#652bee]'
                     }`}>
-                      {order.status}
+                      {order.status === 'in-progress' ? 'In Progress' : order.status}
                     </span>
                   </div>
                   <h3 className="text-xl font-bold font-serif leading-tight text-slate-900 dark:text-white group-hover:text-[#652bee] transition-colors">
@@ -97,7 +104,7 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
                   </div>
                 </div>
 
-                {/* 2. The "Money" Section (Only visible if Completed) */}
+                {/* 2. Right Column: Money (Completed) OR Status (Active) */}
                 {showCompleted ? (
                    <div className="flex items-center gap-4 bg-slate-50 dark:bg-black/20 p-3 rounded-lg border border-slate-100 dark:border-white/5">
                       <div className="text-right">
@@ -116,7 +123,6 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
                       </div>
                    </div>
                 ) : (
-                  // If Active, show Materials Status
                   <div className="flex items-center">
                       <div className="bg-[#2D5A27]/10 text-[#2D5A27] flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#2D5A27]/20">
                         <span className="material-symbols-outlined text-[16px]">check_circle</span>
@@ -126,8 +132,8 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
                 )}
               </div>
               
-              {/* Image Background (Subtle) */}
-              <div className="absolute top-0 right-0 w-32 h-full opacity-10 mask-linear-gradient">
+              {/* Background Image Effect */}
+              <div className="absolute top-0 right-0 w-32 h-full opacity-10 mask-linear-gradient pointer-events-none">
                  {order.img && <Image src={order.img} alt="Pattern" fill className="object-cover" />}
               </div>
             </div>
@@ -138,14 +144,22 @@ const OrdersView = ({ orders, openOrder, showCompleted }: { orders: Order[], ope
   );
 };
 
-// --- MAIN COMPONENT ---
+// --- INVENTORY VIEW (Placeholder) ---
+const InventoryView = () => (
+  <div className="text-center p-12 text-slate-400 animate-in fade-in">
+    <span className="material-symbols-outlined text-4xl mb-2 opacity-50">inventory_2</span>
+    <p>Inventory Module Coming Soon</p>
+  </div>
+);
+
+// --- MAIN EXPORT ---
 export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentView, setCurrentView] = useState<'queue' | 'inventory'>('queue');
-  // New State for Toggle
   const [showCompleted, setShowCompleted] = useState(false);
 
+  // Modal State Logic
   const activeOrderId = searchParams.get('orderId');
   const selectedOrder = initialOrders.find(o => o.id === activeOrderId) || null;
 
@@ -182,7 +196,7 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
          </nav>
       </aside>
 
-      {/* CONTENT */}
+      {/* MAIN CONTENT AREA */}
       <main className="flex-1 md:ml-64 pb-32 md:pb-10">
          <header className="hidden md:flex items-center justify-between p-8 pb-4">
              <div className="flex items-center gap-4">
@@ -190,7 +204,7 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
                  {currentView === 'inventory' ? 'Inventory' : (showCompleted ? 'Financial History' : 'Active Queue')}
                </h2>
                
-               {/* TOGGLE SWITCH for Orders */}
+               {/* TOGGLE: Active vs Completed */}
                {currentView === 'queue' && (
                  <div className="flex bg-slate-200 dark:bg-white/10 p-1 rounded-lg">
                     <button 
@@ -219,12 +233,23 @@ export const AdminDashboard = ({ initialOrders }: { initialOrders: Order[] }) =>
             {currentView === 'queue' ? (
                <OrdersView orders={initialOrders} openOrder={openOrder} showCompleted={showCompleted} />
             ) : (
-               <div className="text-center p-12 text-slate-400">Inventory Module Coming Soon</div>
+               <InventoryView />
             )}
          </div>
       </main>
 
-      <ProjectWorkspaceModal order={selectedOrder} isOpen={!!selectedOrder} onClose={closeOrder} />
+      {/* MOBILE BOTTOM NAV */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-around md:hidden z-30">
+          <button onClick={() => setCurrentView('queue')} className="p-2 font-bold text-sm">Orders</button>
+          <button onClick={() => setCurrentView('inventory')} className="p-2 font-bold text-sm">Stock</button>
+      </nav>
+
+      {/* MODAL POPUP */}
+      <ProjectWorkspaceModal 
+        order={selectedOrder} 
+        isOpen={!!selectedOrder} 
+        onClose={closeOrder} 
+      />
     </div>
   );
 };
