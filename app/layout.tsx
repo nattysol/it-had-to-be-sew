@@ -1,18 +1,23 @@
 import type { Metadata } from "next";
-// We import fonts here to make them available everywhere
-import { Inter, Playfair_Display } from "next/font/google"; 
-import "./globals.css"; // This loads Tailwind
+import localFont from "next/font/local";
+import "./globals.css";
 
-// 1. Configure Fonts
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
 
 export const metadata: Metadata = {
   title: "It Had To Be Sew",
-  description: "Custom Longarm Quilting Services",
+  description: "Quilting Project Manager",
 };
 
-// 2. The Root Layout Component
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,8 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {/* 3. The Body tag is REQUIRED here */}
-      <body className={`${inter.variable} ${playfair.variable} font-sans`}>
+      <head>
+        {/* 👇 THIS IS THE MISSING LINE THAT FIXES YOUR ICONS */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
