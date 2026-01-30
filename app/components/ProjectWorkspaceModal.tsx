@@ -11,7 +11,6 @@ interface ProjectWorkspaceModalProps {
   onClose: () => void;
 }
 
-// Helper to format seconds into MM:SS
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -27,25 +26,36 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize timer from order data when modal opens
+  // Workflow State (Local only for now)
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+
+  // 1. INITIALIZE ON OPEN
   useEffect(() => {
     if (isOpen && order) {
       setSeconds(order.actualTimeSeconds || 0);
-      // If status is "in-progress", auto-start timer? (Optional, let's keep it manual for safety)
-      if (order.status === 'in-progress') {
+      
+      // Check status safely (lowercase comparison)
+      const currentStatus = order.status.toLowerCase();
+      if (currentStatus === 'in-progress' || currentStatus === 'in progress') {
         setIsTimerRunning(true);
       } else {
         setIsTimerRunning(false);
       }
     }
+    
+    // Cleanup on close
     return () => stopTimer();
   }, [isOpen, order]);
 
-  // Timer Logic
+  // 2. TIMER ENGINE
   useEffect(() => {
     if (isTimerRunning) {
+      // Clear any existing interval just in case
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      
+      // Start ticking
       timerIntervalRef.current = setInterval(() => {
-        setSeconds(s => s + 1);
+        setSeconds(prev => prev + 1);
       }, 1000);
     } else {
       stopTimer();
@@ -57,7 +67,14 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
   };
 
-  // Prevent scrolling
+  // 3. WORKFLOW HANDLER
+  const toggleStep = (step: string) => {
+    setCompletedSteps(prev => 
+      prev.includes(step) ? prev.filter(s => s !== step) : [...prev, step]
+    );
+  };
+
+  // Prevent background scroll
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = 'unset';
@@ -65,37 +82,37 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
 
   if (!isOpen || !order) return null;
 
-  // ⚡️ ACTION: START / PAUSE / FINISH
+  // 4. MAIN BUTTON ACTIONS
   const handleMainAction = () => {
     if (!order.id) return;
 
     startTransition(async () => {
-      // SCENARIO 1: STARTING A NEW JOB
-      if (order.status === 'pending' || order.status === 'Pending') {
+      const currentStatus = order.status.toLowerCase();
+
+      // START
+      if (currentStatus === 'pending') {
         await updateOrderStatus(order.id, 'in-progress');
         setIsTimerRunning(true);
       } 
-      // SCENARIO 2: FINISHING A JOB
-      else if (order.status === 'in-progress') {
-        // Stop timer, save time, mark complete
+      // PAUSE / FINISH
+      else if (currentStatus === 'in-progress' || currentStatus === 'in progress') {
         setIsTimerRunning(false);
-        await updateOrderTime(order.id, seconds);
+        await updateOrderTime(order.id, seconds); // Save the time
         await updateOrderStatus(order.id, 'completed');
       }
-      // SCENARIO 3: RE-OPENING A COMPLETED JOB
-      else if (order.status === 'completed') {
+      // RESTART
+      else if (currentStatus === 'completed') {
         await updateOrderStatus(order.id, 'in-progress');
         setIsTimerRunning(true);
       }
     });
   };
 
-  // Save time periodically or when pausing manually
-  const toggleTimer = async () => {
+  // Manual Play/Pause Button
+  const toggleTimerManual = async () => {
     if (isTimerRunning) {
       setIsTimerRunning(false);
-      // Save progress
-      await updateOrderTime(order.id, seconds);
+      await updateOrderTime(order.id, seconds); // Save progress when pausing
     } else {
       setIsTimerRunning(true);
     }
@@ -110,23 +127,22 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
         className="bg-white dark:bg-[#1e1635] w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl border border-slate-100 dark:border-[#2d2445] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* LEFT COLUMN: VISUALS & MATERIALS */}
+        {/* LEFT COLUMN */}
         <div className="w-full md:w-1/3 bg-slate-50 dark:bg-[#151022] border-r border-slate-100 dark:border-[#2d2445] flex flex-col overflow-y-auto">
-          <div className="relative h-56 w-full shrink-0">
+          <div className="relative h-56 w-full shrink-0 bg-slate-200">
             {order.img ? (
               <Image src={order.img} alt={order.pattern} fill className="object-cover" />
             ) : (
-              <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
+              <div className="w-full h-full flex items-center justify-center text-slate-400">No Pattern Image</div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            <div className="absolute bottom-4 left-4 text-white">
-              <h4 className="font-bold text-lg leading-none">{order.clientName}</h4>
-              <p className="text-sm opacity-80">{order.pattern}</p>
+            <div className="absolute bottom-4 left-4 text-white z-10">
+              <h4 className="font-bold text-lg leading-none drop-shadow-md">{order.clientName}</h4>
+              <p className="text-sm opacity-90 drop-shadow-md">{order.pattern}</p>
             </div>
           </div>
           
           <div className="p-6 space-y-6">
-            {/* MATERIALS CHECKLIST */}
             <div>
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">inventory_2</span> 
@@ -145,14 +161,9 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
                   <span className="text-slate-500">Binding</span>
                   <span className="font-semibold">{order.binding}</span>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-dashed border-slate-200 dark:border-white/10">
-                  <span className="text-slate-500">Batting</span>
-                  <span className="font-semibold text-green-600">Reserved (100")</span>
-                </div>
               </div>
             </div>
 
-            {/* DIMENSIONS */}
             <div className="grid grid-cols-2 gap-4">
                <div className="bg-white dark:bg-white/5 p-3 rounded-lg border border-slate-200 dark:border-white/10">
                  <p className="text-[10px] text-slate-400 uppercase font-bold">Width</p>
@@ -166,9 +177,8 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
           </div>
         </div>
 
-        {/* RIGHT COLUMN: WORKSPACE */}
+        {/* RIGHT COLUMN */}
         <div className="flex-1 flex flex-col h-full relative bg-white dark:bg-[#1e1635]">
-           {/* HEADER */}
            <div className="p-6 border-b border-slate-100 dark:border-[#2d2445] flex justify-between items-center">
               <div>
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md mb-2 inline-block ${
@@ -181,19 +191,17 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
                 <p className="text-xs text-slate-400">Order #{order.id.slice(0,6)}</p>
               </div>
               
-              {/* TIMER DISPLAY */}
+              {/* TIMER */}
               <div className="flex items-center gap-3 bg-slate-50 dark:bg-black/20 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/10">
                  <div className={`size-3 rounded-full ${isTimerRunning ? 'bg-red-500 animate-pulse' : 'bg-slate-300'}`} />
                  <span className="text-2xl font-mono font-bold tracking-widest text-slate-700 dark:text-white">
                    {formatTime(seconds)}
                  </span>
-                 {order.status === 'in-progress' && (
-                   <button onClick={toggleTimer} className="ml-2 text-slate-400 hover:text-slate-600">
-                     <span className="material-symbols-outlined text-lg">
-                       {isTimerRunning ? 'pause' : 'play_arrow'}
-                     </span>
-                   </button>
-                 )}
+                 <button onClick={toggleTimerManual} className="ml-2 text-slate-400 hover:text-slate-600">
+                   <span className="material-symbols-outlined text-lg">
+                     {isTimerRunning ? 'pause' : 'play_arrow'}
+                   </span>
+                 </button>
               </div>
 
               <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full text-slate-400 transition-colors">
@@ -201,31 +209,40 @@ export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspa
               </button>
            </div>
 
-           {/* CONTENT SCROLL */}
            <div className="p-8 overflow-y-auto flex-1">
               <div className="mb-6">
                  <h2 className="text-xl font-bold font-serif mb-4">Project Notes</h2>
                  <textarea 
-                   className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#652bee] outline-none min-h-[150px] resize-none"
-                   placeholder="Enter machine settings, thread tension notes, or client requests here..." 
+                   className="w-full bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#652bee] outline-none min-h-[100px] resize-none"
+                   placeholder="Enter machine settings..." 
                  />
               </div>
 
               <h2 className="text-xl font-bold font-serif mb-4">Workflow</h2>
               <div className="space-y-3">
                  {['Measure Top & Backing', 'Load Backing', 'Load Batting & Top', 'Baste', 'Quilt', 'Trim'].map((step, i) => (
-                   <label key={i} className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group">
-                      <div className="size-6 rounded border-2 border-slate-300 group-hover:border-[#652bee] flex items-center justify-center">
-                         {/* Fake checkbox logic for UI demo */}
-                         <div className="size-3 rounded-sm bg-transparent group-active:bg-[#652bee]" />
+                   <div 
+                      key={i} 
+                      onClick={() => toggleStep(step)}
+                      className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all group ${
+                        completedSteps.includes(step) 
+                          ? 'bg-[#652bee]/5 border-[#652bee] text-[#652bee]' 
+                          : 'border-slate-100 dark:border-white/5 hover:bg-slate-50'
+                      }`}
+                   >
+                      <div className={`size-6 rounded border-2 flex items-center justify-center transition-colors ${
+                         completedSteps.includes(step) ? 'border-[#652bee] bg-[#652bee]' : 'border-slate-300'
+                      }`}>
+                         {completedSteps.includes(step) && <span className="material-symbols-outlined text-white text-sm">check</span>}
                       </div>
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">{step}</span>
-                   </label>
+                      <span className={`font-semibold ${completedSteps.includes(step) ? 'line-through opacity-70' : 'text-slate-700 dark:text-slate-300'}`}>
+                        {step}
+                      </span>
+                   </div>
                  ))}
               </div>
            </div>
 
-           {/* BIG FOOTER BUTTON */}
            <div className="p-6 border-t border-slate-100 dark:border-[#2d2445] bg-white dark:bg-[#1e1635]">
               <button 
                 onClick={handleMainAction}

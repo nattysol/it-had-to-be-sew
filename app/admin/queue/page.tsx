@@ -37,7 +37,12 @@ const QUERY = `*[_type == "order"] | order(orderDate asc) {
   actualFabricUsed,
   actualTimeSeconds,
   
-  "img": coalesce(image.asset->url, img.asset->url)
+  "img": coalesce(
+  pattern->image.asset->url,  // 1. Check the Pattern's image
+  pattern->img.asset->url,    // 2. Check for 'img' field in Pattern
+  image.asset->url,           // 3. Check Order's image
+  img.asset->url              // 4. Fallback
+)
 }`;
 
 async function getOrders(): Promise<Order[]> {
