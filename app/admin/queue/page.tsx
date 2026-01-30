@@ -1,62 +1,66 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { AdminDashboard, Order } from '../../components/RealDashboard'; 
-// Import the client we just made
-import { client, urlFor } from '../../lib/sanity';
+import { client } from '../../lib/sanity';
 
-export const dynamic = 'force-dynamic'; // Disable caching so you always see new orders
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 1. Define what we want from Sanity
-// 👇 CHANGE "order" to "project" if that is what you named your schema!
+// 1. UPDATED QUERY: Safely handles References and different field names
 const QUERY = `*[_type == "order"] | order(dueDate asc) {
   _id,
-  clientName,
-  pattern,
+  
+  // Handle Client Name (Try 'clientName' text, OR follow 'client' reference to its name)
+  "clientName": coalesce(clientName, client->name, "Unknown Client"),
+
+  // Handle Pattern (Try 'pattern' text, OR follow 'pattern' reference to its title/name)
+  "pattern": coalesce(pattern, pattern->title, pattern->name, "Custom Pattern"),
+
   dimensions,
   dueDate,
   status,
   battingLength,
   materialsAvailable,
   lowStock,
-  "img": image.asset->url
+  
+  // Handle Images (Check both 'image' and 'img' field names)
+  "img": coalesce(image.asset->url, img.asset->url)
 }`;
 
-// 2. The Data Fetching Function
 async function getOrders(): Promise<Order[]> {
   try {
     const data = await client.fetch(QUERY);
     
-    // Map Sanity data to our Dashboard format
+    // 2. SAFETY MAPPING: Ensure no objects slip through to React
     return data.map((item: any) => ({
       id: item._id,
-      clientName: item.clientName || 'Unknown Client',
-      pattern: item.pattern || 'Custom Pattern',
+      // Force these to be strings to prevent Error #31
+      clientName: typeof item.clientName === 'object' ? 'Linked Client' : (item.clientName || 'Unknown'),
+      pattern: typeof item.pattern === 'object' ? 'Linked Pattern' : (item.pattern || 'Custom'),
+      
       dimensions: item.dimensions || 'N/A',
       dueDate: item.dueDate || new Date().toISOString(),
       status: item.status || 'Pending',
       battingLength: item.battingLength || 0,
       materialsAvailable: item.materialsAvailable || false,
       lowStock: item.lowStock || false,
-      // If Sanity has an image, use it; otherwise use a placeholder
+      // Fallback image if Sanity image is missing
       img: item.img || 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600'
     }));
   } catch (error) {
     console.error("Sanity Fetch Error:", error);
-    return []; // Return empty list on error so page doesn't crash
+    return [];
   }
 }
 
 export default async function QueuePage() {
-  // 3. Fetch the real data
   const orders = await getOrders();
 
   return (
     <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Queue...</div>}>
-      {/* 4. Pass REAL orders to the dashboard */}
       <AdminDashboard initialOrders={orders} />
     </Suspense>
   );
