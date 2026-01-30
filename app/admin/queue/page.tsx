@@ -9,25 +9,9 @@ export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 👇 DEBUG QUERY: We are fetching the ENTIRE Client document to inspect it
+// 👇 QUERY: Fetch EVERYTHING (...) so we can inspect field names
 const QUERY = `*[_type == "order"] | order(dueDate asc) {
-  _id,
-  
-  // 1. Fetch the entire referenced document so we can see its fields
-  "debugClient": clientName->, 
-  
-  // 2. Also try to get the raw text if it's not a reference
-  "rawClientName": clientName,
-
-  // 3. Pattern
-  "pattern": coalesce(pattern->name, pattern->title, pattern, "Custom Pattern"),
-
-  dimensions,
-  dueDate,
-  status,
-  battingLength,
-  materialsAvailable,
-  lowStock,
+  ...,
   "img": coalesce(image.asset->url, img.asset->url)
 }`;
 
@@ -36,24 +20,16 @@ async function getOrders(): Promise<Order[]> {
     const data = await client.fetch(QUERY);
     
     return data.map((item: any) => {
-      // 🕵️‍♂️ INSPECTION LOGIC
-      let finalName = "Unknown";
-
-      if (item.debugClient) {
-        // If we found the linked document, PRINT ITS KEYS so we can see the name field!
-        // We filter out system fields (starting with _) to make it readable
-        const keys = Object.keys(item.debugClient).filter(k => !k.startsWith('_'));
-        finalName = `FIELDS FOUND: ${keys.join(', ')} (Value: ${JSON.stringify(item.debugClient)})`;
-      } else if (typeof item.rawClientName === 'string') {
-        finalName = item.rawClientName;
-      } else {
-        finalName = "Link Found but Document Empty/Missing";
-      }
-
+      // 🕵️‍♂️ X-RAY VISION: Get a list of all field names in this document
+      // We filter out system fields (starting with _) to see the content fields
+      const fieldNames = Object.keys(item).filter(key => !key.startsWith('_') && key !== 'img');
+      
       return {
         id: item._id,
-        clientName: finalName, // 👈 This will print the secret fields on the screen
-        pattern: typeof item.pattern === 'object' ? 'Pattern Object' : item.pattern,
+        // 👇 THIS WILL PRINT THE FIELD NAMES ON YOUR SCREEN
+        clientName: `FIELDS: ${fieldNames.join(', ')}`,
+        
+        pattern: item.pattern || 'Pattern Unknown',
         dimensions: item.dimensions || 'N/A',
         dueDate: item.dueDate || new Date().toISOString(),
         status: item.status || 'Pending',
