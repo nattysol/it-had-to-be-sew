@@ -9,9 +9,34 @@ export const metadata: Metadata = {
   title: 'Admin Queue | It Had To Be Sew',
 };
 
-// 👇 Fetch EVERYTHING to inspect structure
-const QUERY = `*[_type == "order"] | order(dueDate asc) {
-  ...,
+// 👇 FINAL QUERY: Uses your exact field names ("customer", "pattern", "orderDate")
+const QUERY = `*[_type == "order"] | order(orderDate asc) {
+  _id,
+  
+  // 1. CUSTOMER: Follow the link to find the name
+  "clientName": coalesce(
+    customer->name,        // Try "name" inside the customer doc
+    customer->fullName,    // Try "fullName"
+    customer->firstName,   // Try "firstName"
+    "Unknown Customer"     // Fallback
+  ),
+
+  // 2. PATTERN: Follow the link to find the pattern name
+  "pattern": coalesce(
+    pattern->name,         // Try "name" inside the pattern doc
+    pattern->title,        // Try "title"
+    "Custom Pattern"
+  ),
+
+  // 3. DATES & STATUS
+  "dueDate": orderDate,    // Mapping your "orderDate" to our "dueDate"
+  status,
+  dimensions,
+  
+  // 4. INVENTORY / EXTRAS
+  // You have a 'backing' field, assuming it might be related or we default to 0 for now
+  "battingLength": coalesce(dimensions, 0), 
+  
   "img": coalesce(image.asset->url, img.asset->url)
 }`;
 
@@ -19,34 +44,24 @@ async function getOrders(): Promise<Order[]> {
   try {
     const data = await client.fetch(QUERY);
     
-    return data.map((item: any) => {
-      // 1. Get all field names for debugging
-      const keys = Object.keys(item).filter(k => !k.startsWith('_') && k !== 'img');
-
-      return {
-        id: item._id,
-        
-        // 🛡️ SAFETY FORCE-FIELD: We wrap everything in String() or JSON.stringify()
-        // This guarantees React only ever sees text.
-        
-        clientName: `FIELDS: ${keys.join(', ')}`,
-        
-        // If pattern is an object, turn it into text so it doesn't crash
-        pattern: typeof item.pattern === 'object' 
-          ? `(Ref: ${JSON.stringify(item.pattern)})` 
-          : String(item.pattern || 'No Pattern'),
-          
-        dimensions: String(item.dimensions || 'N/A'),
-        dueDate: String(item.dueDate || new Date().toISOString()),
-        status: String(item.status || 'Pending'),
-        
-        battingLength: Number(item.battingLength || 0),
-        materialsAvailable: Boolean(item.materialsAvailable),
-        lowStock: Boolean(item.lowStock),
-        
-        img: item.img || 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600'
-      };
-    });
+    return data.map((item: any) => ({
+      id: item._id,
+      
+      // ✅ No more JSON.stringify! We expect real text now.
+      clientName: item.clientName || 'Unknown',
+      pattern: item.pattern || 'Custom Pattern',
+      
+      dimensions: item.dimensions || 'N/A',
+      dueDate: item.dueDate || new Date().toISOString(),
+      status: item.status || 'Pending',
+      
+      // Just a default for now since we don't have a clear batting field yet
+      battingLength: 100, 
+      materialsAvailable: true, // Defaulting to true for now
+      lowStock: false,
+      
+      img: item.img || 'https://images.unsplash.com/photo-1598555848889-8d5f30e78f7e?q=80&w=600'
+    }));
   } catch (error) {
     console.error("Sanity Fetch Error:", error);
     return [];
