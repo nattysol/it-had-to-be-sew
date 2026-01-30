@@ -1,28 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-// 👇 1. COMMENT THIS IMPORT OUT
-// import { completeOrder } from '../../app/actions'; 
-
-// --- Types ---
-export interface Order { // 👈 Added "export"
-  id: string;
-  clientName: string;
-  pattern: string;
-  dimensions: string; 
-  dueDate: string;
-  status: string;
-  battingLength: number;
-  materialsAvailable?: boolean;
-  lowStock?: boolean;
-  img?: string;
-  totalPrice?: number;
-  actualTimeSeconds?: number;
-  efficiencyMetrics?: {
-    speed: number;
-    scrap: string;
-  };
-}
+import React, { useEffect } from 'react';
+import Image from 'next/image';
+// Reuse the Order type from your Dashboard
+import { Order } from './RealDashboard'; 
 
 interface ProjectWorkspaceModalProps {
   order: Order | null;
@@ -31,168 +12,122 @@ interface ProjectWorkspaceModalProps {
 }
 
 export const ProjectWorkspaceModal = ({ order, isOpen, onClose }: ProjectWorkspaceModalProps) => {
+  // Prevent scrolling the background when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
   if (!isOpen || !order) return null;
 
-  const [phase, setPhase] = useState<'pre' | 'active' | 'paused' | 'reconcile'>('pre');
-  const [secondsElapsed, setSecondsElapsed] = useState(0); 
-  const [reconcileData, setReconcileData] = useState({ actualFabricUsed: '', battingScrap: '' });
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (phase === 'active') {
-      interval = setInterval(() => {
-        setSecondsElapsed((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  const getTimeParts = (totalSeconds: number) => {
-    const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-    const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-    const secs = (totalSeconds % 60).toString().padStart(2, '0');
-    return { hrs, mins, secs };
-  };
-  const { hrs, mins, secs } = getTimeParts(secondsElapsed);
-
-  const metrics = useMemo(() => {
-    try {
-      const dims = order.dimensions.match(/\d+/g)?.map(Number);
-      if (!dims || dims.length < 2) return { area: 0, threadNeeded: 0, battingNeeded: 0, speed: 0 };
-      const [w, h] = dims;
-      const area = w * h;
-      return { 
-        area, 
-        threadNeeded: Math.ceil((area * 3.5) / 36),
-        battingNeeded: h + 8,
-        speed: Math.round(area / Math.max(secondsElapsed / 3600, 0.1))
-      };
-    } catch (e) {
-      return { area: 0, threadNeeded: 0, battingNeeded: 0, speed: 0 };
-    }
-  }, [order.dimensions, secondsElapsed]);
-
-  // Handlers
-  const handleStart = () => setPhase('active');
-  const handlePause = () => setPhase(phase === 'active' ? 'paused' : 'active');
-  const handleStop = () => setPhase('reconcile');
-  
-  const handleFinalize = async () => {
-    setIsSaving(true);
-    
-    // 👇 2. COMMENT THIS LOGIC OUT SO IT DOESN'T CRASH
-    /*
-    const result = await completeOrder(order.id, {
-      finalTimeSeconds: secondsElapsed,
-      actualFabricUsed: reconcileData.actualFabricUsed,
-      battingScrap: reconcileData.battingScrap,
-      efficiencySpeed: metrics.speed
-    });
-    */
-
-    // Simulate success
-    setTimeout(() => {
-        console.log("Fake save complete");
-        setIsSaving(false);
-        onClose();
-    }, 500);
-  };
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 font-display">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-md transition-opacity" onClick={onClose} />
-
-      <div className="relative bg-[#f6f6f8] dark:bg-[#151022] w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] text-[#131118] dark:text-white">
+    // 1. BACKDROP OVERLAY (Dark background behind modal)
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose} // Close if clicking outside
+    >
+      {/* 2. MODAL CARD (The actual white box) */}
+      <div 
+        className="bg-white dark:bg-[#1e1635] w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-slate-100 dark:border-[#2d2445] overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()} // Don't close if clicking inside
+      >
         
-        {/* HEADER */}
-        <header className="flex items-center justify-between p-6 pb-2 sticky top-0 z-50 bg-inherit">
-          <div className="flex items-center gap-2">
-            <button onClick={onClose} className="hover:bg-black/5 rounded-full p-1 transition-colors">
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <h2 className="font-serif text-2xl font-medium tracking-tight">
-              {phase === 'reconcile' ? 'Reconciliation' : 'Workspace'}
-            </h2>
+        {/* LEFT COLUMN: Image & Quick Stats */}
+        <div className="w-full md:w-1/3 bg-slate-50 dark:bg-[#151022] border-r border-slate-100 dark:border-[#2d2445] flex flex-col">
+          <div className="relative h-48 md:h-64 w-full">
+            {order.img ? (
+              <Image 
+                src={order.img} 
+                alt={order.pattern} 
+                fill 
+                className="object-cover" 
+              />
+            ) : (
+              <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
+            )}
+            <div className="absolute top-4 left-4">
+               <span className="bg-white/90 text-slate-800 text-xs font-bold px-2 py-1 rounded shadow-sm">
+                 {order.id}
+               </span>
+            </div>
           </div>
-          {phase !== 'reconcile' && (
-            <div className={`flex items-center gap-3 bg-white dark:bg-[#1e1635] rounded-full py-2 px-4 shadow-sm border transition-all ${phase === 'active' ? 'border-[#652bee]/20' : 'border-transparent'}`}>
-              <div className={`w-2 h-2 rounded-full ${phase === 'active' ? 'bg-[#652bee] animate-pulse' : 'bg-gray-400'}`}></div>
-              <div className="digital-font text-sm font-bold tracking-tighter">{hrs}:{mins}:{secs}</div>
+          
+          <div className="p-6 space-y-4 overflow-y-auto">
+            <div>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Dimensions</h4>
+              <p className="font-semibold text-slate-700 dark:text-slate-200">{order.dimensions}</p>
             </div>
-          )}
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
-          {phase === 'reconcile' ? (
-            <div className="animate-in slide-in-from-bottom-4 fade-in duration-300 space-y-8">
-              <div className="text-center space-y-2 pt-4">
-                <p className="text-[#6d6189] dark:text-gray-400 text-xs font-bold tracking-widest uppercase">Final Time</p>
-                <h1 className="text-[#6d6189] dark:text-gray-300 text-[48px] font-bold leading-none tracking-tight font-[Space_Grotesk]">
-                  {hrs}:{mins}:{secs}
-                </h1>
+            <div>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Batting</h4>
+              <p className="font-semibold text-slate-700 dark:text-slate-200">{order.battingLength} inches required</p>
+            </div>
+            
+            <div className={`p-3 rounded-lg border ${order.materialsAvailable ? 'bg-green-50 border-green-100 text-green-800' : 'bg-yellow-50 border-yellow-100 text-yellow-800'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                 <span className="material-symbols-outlined text-lg">
+                    {order.materialsAvailable ? 'check_circle' : 'inventory_2'}
+                 </span>
+                 <span className="font-bold text-sm">Inventory Status</span>
               </div>
-              <button onClick={handleFinalize} disabled={isSaving} className="w-full h-14 bg-[#652bee] text-white rounded-xl font-bold">
-                  {isSaving ? 'Saving...' : 'Finalize Order'}
+              <p className="text-xs opacity-90">
+                {order.materialsAvailable ? 'All materials reserved and ready.' : 'Waiting on backing fabric.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Action Area */}
+        <div className="flex-1 flex flex-col h-full relative">
+           {/* Header */}
+           <div className="p-6 border-b border-slate-100 dark:border-[#2d2445] flex justify-between items-start">
+              <div>
+                <h2 className="text-2xl font-bold font-serif text-[#131118] dark:text-white">{order.clientName}</h2>
+                <p className="text-slate-500 text-sm mt-1">{order.pattern}</p>
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full text-slate-400 transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
               </button>
-            </div>
-          ) : (
-            <>
-              {/* Controls */}
-              <div className="flex gap-4 py-4">
-                 {/* ... Timer Cards ... */}
-              </div>
-              <div className="flex justify-center items-center gap-6">
-                <button onClick={phase === 'pre' ? handleStart : handlePause} className={`flex size-16 items-center justify-center rounded-full shadow-lg transition-all bg-[#652bee] text-white`}>
-                  <span className="material-symbols-outlined text-3xl">{phase === 'active' ? 'pause' : 'play_arrow'}</span>
-                </button>
-                <button onClick={handleStop} disabled={phase === 'pre'} className="flex size-12 items-center justify-center rounded-full bg-white dark:bg-[#1e1635] shadow-md text-red-400">
-                  <span className="material-symbols-outlined">stop</span>
-                </button>
-              </div>
+           </div>
 
-              {/* PROJECT CARD */}
-              <div className="bg-white dark:bg-[#1e1635] rounded-xl overflow-hidden shadow-lg p-2 border border-black/5 dark:border-white/5">
-                 <div className="flex flex-col">
-                   <div className="w-full h-32 bg-center bg-cover rounded-lg" style={{ backgroundImage: `url("${order.img}")` }} />
-                   <div className="p-4 pt-5 gap-4">
-                     <h3 className="font-serif text-3xl leading-none">{order.clientName}</h3>
-                     <div className="space-y-4 mt-2">
-                        <div className="flex items-center justify-between">
-                          <h5 className="text-sm font-bold uppercase tracking-widest">Inventory Status</h5>
-                          {phase !== 'pre' && (
-                            <span className="text-[10px] font-bold bg-[#652bee]/20 text-[#652bee] px-2 py-1 rounded-full animate-in fade-in">RESERVED</span>
-                          )}
-                        </div>
-                        <div className="space-y-3">
-                          <InventoryItem name="Thread" detail={`${metrics.threadNeeded} Yards`} icon="spool" checked={phase !== 'pre'} />
-                          <InventoryItem name="Batting" detail={`${metrics.battingNeeded} Inches`} icon="layers" checked={phase !== 'pre'} />
-                        </div>
-                     </div>
-                   </div>
+           {/* Content (Scrollable) */}
+           <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="border border-slate-200 dark:border-[#332a4d] p-4 rounded-xl hover:border-[#652bee] cursor-pointer transition-colors group">
+                    <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#652bee] mb-2">straighten</span>
+                    <h3 className="font-bold text-sm">Measure Top</h3>
+                    <p className="text-xs text-slate-500">Confirm dimensions</p>
+                 </div>
+                 <div className="border border-slate-200 dark:border-[#332a4d] p-4 rounded-xl hover:border-[#652bee] cursor-pointer transition-colors group">
+                    <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-[#652bee] mb-2">photo_camera</span>
+                    <h3 className="font-bold text-sm">Intake Photos</h3>
+                    <p className="text-xs text-slate-500">Add to gallery</p>
                  </div>
               </div>
-            </>
-          )}
-        </main>
+              
+              <div className="bg-slate-50 dark:bg-black/20 p-4 rounded-xl">
+                 <h3 className="font-bold text-sm mb-3">Project Notes</h3>
+                 <textarea 
+                   className="w-full bg-transparent text-sm border-none focus:ring-0 p-0 text-slate-600 resize-none h-24"
+                   placeholder="Add notes about thread choice, client requests, or issues here..." 
+                 />
+              </div>
+           </div>
+
+           {/* Footer */}
+           <div className="p-6 border-t border-slate-100 dark:border-[#2d2445] bg-slate-50/50 dark:bg-[#151022]/50">
+              <button className="w-full bg-[#652bee] hover:bg-[#5423c9] text-white font-bold py-3 rounded-xl shadow-lg shadow-[#652bee]/20 transition-all transform active:scale-[0.98]">
+                 Start Quilting Phase
+              </button>
+           </div>
+        </div>
       </div>
     </div>
   );
 };
-
-const InventoryItem = ({ name, detail, checked, icon }: {name: string, detail: string, checked: boolean, icon: string}) => (
-  <div className="flex items-center justify-between p-3 bg-[#f6f6f8] dark:bg-white/5 rounded-lg transition-colors duration-500">
-    <div className="flex items-center gap-3">
-      <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500">
-        <span className="material-symbols-outlined text-lg">{icon}</span>
-      </div> 
-      <div>
-        <p className="text-sm font-bold">{name}</p>
-        <p className="text-xs opacity-60 font-mono text-[#652bee] font-bold">{detail}</p>
-      </div>
-    </div>
-    <span className={`material-symbols-outlined transition-colors duration-500 ${checked ? 'text-[#652bee]' : 'text-gray-300'}`}>
-      check_circle
-    </span>
-  </div>
-);
