@@ -2,30 +2,43 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    // 1. Scan these folders for classes
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}", // Safety fallback
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-inter)", "sans-serif"],
+        serif: ["var(--font-playfair)", "serif"],
+        display: ["var(--font-playfair)", "serif"], // Maps 'font-display' to Playfair
+      },
       colors: {
         brand: {
-          purple: '#3b1c59',  // Logo Deep Plum
-          light: '#efeaf5',   // Logo Light Background
-          teal: '#56a7a7',    // Logo Teal
-          gold: '#cfae46',    // Logo Gold
-          pink: '#d65db1',    // Logo Pink
+          purple: "#652bee",
+          dark: "#131118",
+          bg: "#f8f7fa",
         }
       },
-      fontFamily: {
-        // Fallbacks included to prevent font-loading layout shifts
-        serif: ['var(--font-serif)', 'Playfair Display', 'serif'],
-        sans: ['var(--font-sans)', 'Inter', 'sans-serif'],
+      // These keyframes power the subtle 'pulse' and 'fade' animations
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("tailwindcss-animate"), // Required for animate-in, fade-in, zoom-in
+  ],
 };
 export default config;
